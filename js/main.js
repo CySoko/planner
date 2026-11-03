@@ -27,7 +27,6 @@ function render() {
   $('#today-big').textContent = M.weekdayOf(today) + ' ' + today.slice(5, 7) + '.' + today.slice(8);
   $('#today-sub').textContent = now.toLocaleString('en-US', { month: 'short' }).toLowerCase() + ' ' + now.getFullYear();
   const route = (location.hash.replace(/^#\/?/, '') || '').split('?')[0];
-  $('.brand .sub').hidden = !!route;
   const view = $('#view');
   if (['school', 'life', 'projects'].includes(route)) view.innerHTML = renderArea(route, state, today, nowIso);
   else if (route === 'inbox') view.innerHTML = renderInbox(state);
