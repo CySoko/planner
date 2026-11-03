@@ -48,4 +48,14 @@ function seedIfEmpty_(sheet, rows) {
   sheet.getRange(2, 1, rows.length, rows[0].length).setValues(rows);
 }
 
+// Run selfTest() from the editor after pasting Code.gs. It sends one fake capture through
+// the real web-app code and logs the result. It adds ONE row to Inbox (text starts with "selftest"),
+// which is safe to delete.
+function selfTest() {
+  const res = doPost({ postData: { contents: JSON.stringify({
+    action: 'capture', text: 'selftest neuro reading due thursday', source: 'page', now: new Date().toISOString()
+  }) } });
+  Logger.log(res.getContent());
+}
+
 if (typeof module !== 'undefined') module.exports = { setupSheet };
