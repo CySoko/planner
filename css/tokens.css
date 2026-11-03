@@ -1,0 +1,60 @@
+/* SOKOGEN planner color system. Light is the default; dark is switched by data-theme. */
+:root,
+:root[data-theme="light"] {
+  --bg: #F3F3F7;
+  --panel: rgba(255, 255, 255, .86);
+  --panel-solid: #FFFFFF;
+  --line: rgba(20, 20, 40, .09);
+  --line-strong: rgba(20, 20, 40, .2);
+  --hover: rgba(20, 20, 40, .04);
+  --text: #15151F;
+  --text-2: #2E2E45;
+  --muted: #5A5A7A;
+  --dim: #66667F;
+  --date: #5A5A7A;
+  --on-date: #FFFFFF;
+  --school: #D42A3C;
+  --life: #128A50;
+  --projects: #0A6FA8;
+  --unsure: #9A6A00;
+  --unsure-bg: rgba(154, 106, 0, .08);
+  --stalled: #5A3FE0;
+  --btn: #D42A3C;
+  --btn-text: #FFFFFF;
+  --status-bg: #C8202F;
+  --orb: #E5323F;
+  --tick: rgba(20, 20, 40, .28);
+  --tick-on: #C0283A;
+  --glow: rgba(212, 42, 60, .35);
+  --shadow: 0 30px 80px -45px rgba(20, 20, 40, .35);
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --bg: #080810;
+  --panel: rgba(14, 12, 24, .85);
+  --panel-solid: #0E0C18;
+  --line: rgba(240, 240, 255, .08);
+  --line-strong: rgba(240, 240, 255, .2);
+  --hover: rgba(240, 240, 255, .04);
+  --text: #F0F0FF;
+  --text-2: #D6D6EE;
+  --muted: #8F8FB8;
+  --dim: #6F6F96;
+  --date: #A8A8C8;
+  --on-date: #080810;
+  --school: #FF5C6C;
+  --life: #4DFF9E;
+  --projects: #4DC8FF;
+  --unsure: #FFD27A;
+  --unsure-bg: rgba(255, 210, 122, .07);
+  --stalled: #A48BFF;
+  --btn: #E5323F;
+  --btn-text: #FFFFFF;
+  --status-bg: #C8202F;
+  --orb: #FF3B4F;
+  --tick: rgba(240, 240, 255, .28);
+  --tick-on: #FF8A96;
+  --glow: rgba(255, 59, 79, .45);
+  --shadow: 0 30px 80px -40px rgba(255, 59, 79, .35);
+  color-scheme: dark;
+}

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SOKOGEN · Planner</title>
+<meta name="theme-color" content="#F3F3F7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Planner">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Racing+Sans+One&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<script>try { var t = localStorage.getItem('sokogen-theme-v2'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<!-- The same rules parser Apps Script runs, so the add box can preview guesses even offline. -->
+<script src="apps-script/Parse.js"></script>
+<script type="module" src="js/main.js"></script>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <a class="brand" href="#/">
+      <span class="wordmark">SOKOGEN</span>
+      <span class="mono sub">~<b>/</b>planner <b>::</b> v1</span>
+    </a>
+    <div class="top-right">
+      <div class="today">
+        <div class="today-big" id="today-big"></div>
+        <div class="mono today-sub" id="today-sub"></div>
+      </div>
+      <button class="btn primary" data-act="open-palette">+ add task</button>
+      <button class="switch" role="switch" aria-checked="false" aria-label="Light mode" data-act="toggle-theme">
+        <span class="mono">dark</span><span class="track"><span class="knob"></span></span><span class="mono">light</span>
+      </button>
+    </div>
+  </header>
+
+  <section class="palette" id="palette" hidden>
+    <label for="capture" class="palette-label"><span class="h2">New task</span><span class="muted">Say it the way you'd say it to Siri, or paste a whole syllabus.</span></label>
+    <textarea id="capture" rows="2" placeholder="neuro reading due thursday"></textarea>
+    <div class="chips" id="capture-chips"></div>
+    <p class="error" id="capture-error" hidden></p>
+    <div class="row-end">
+      <button class="btn" data-act="close-palette">esc</button>
+      <button class="btn primary" data-act="send-capture">send to inbox ↵</button>
+    </div>
+  </section>
+
+  <main id="view" tabindex="-1"></main>
+
+  <footer class="status mono" id="status"></footer>
+</div>
+</body>
+</html>
