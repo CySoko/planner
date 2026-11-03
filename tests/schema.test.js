@@ -39,8 +39,10 @@ function fakeSpreadsheet(initialTabs) {
       getRange: (row, col, nr, nc) => ({
         getValues: () => Array.from({ length: nr }, (_, i) => Array.from({ length: nc }, (_, j) => (s.rows[row - 1 + i] || [])[col - 1 + j] ?? '')),
         setValues: (vals) => { vals.forEach((v, i) => { s.rows[row - 1 + i] = v.slice(); }); },
-        setFontWeight: () => {}
+        setFontWeight: () => {},
+        setNumberFormat: (f) => { s.format = f; }
       }),
+      getMaxRows: () => 1000,
       setFrozenRows: (n) => { s.frozen = n; }
     };
     return s;
@@ -62,6 +64,7 @@ test('setupSheet creates all six tabs with headers, seeds defaults, removes an e
   for (const [tab, cols] of Object.entries(HEADERS)) {
     assert.deepEqual(ss.tabs.get(tab).rows[0], cols);
     assert.equal(ss.tabs.get(tab).frozen, 1);
+    assert.equal(ss.tabs.get(tab).format, '@');
   }
   assert.equal(ss.tabs.get('Context').rows.length, 1 + DEFAULT_CONTEXT.length);
   assert.equal(ss.tabs.get('Quotes').rows.length, 1 + DEFAULT_QUOTES.length);

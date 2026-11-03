@@ -16,6 +16,8 @@ function setupSheet(ss) {
       header.setFontWeight('bold');
     }
     sheet.setFrozenRows(1);
+    // Plain text everywhere, so Sheets never turns ids or dates into date values.
+    sheet.getRange(1, 1, sheet.getMaxRows(), cols.length).setNumberFormat('@');
   });
 
   seedIfEmpty_(ss.getSheetByName('Context'), S.DEFAULT_CONTEXT);
