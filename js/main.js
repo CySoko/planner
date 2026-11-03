@@ -30,13 +30,13 @@ function render() {
   const route = (location.hash.replace(/^#\/?/, '') || '').split('?')[0];
   if (!state.ui.scratchDate || state.ui.scratchDate > today) state.ui.scratchDate = today;
 
-  // If a scratch bullet has focus, snapshot the panel so typing is never interrupted.
+  // If a scratch input has focus, capture its current value so typing is never lost.
   const scratchActive = document.activeElement && document.activeElement.dataset.scratchInput !== undefined;
-  let scratchSnapshot = null;
+  let scratchSnap = null;
   if (scratchActive && !route) {
-    const panel = document.querySelector('.scratch-panel');
-    scratchSnapshot = panel ? panel.outerHTML : null;
-    state.ui.scratchFocus = { id: document.activeElement.dataset.id };
+    const el = document.activeElement;
+    scratchSnap = { id: el.dataset.id, value: el.value, sel: el.selectionStart };
+    state.ui.scratchFocus = { id: el.dataset.id };
   }
 
   const view = $('#view');
@@ -44,14 +44,11 @@ function render() {
   else if (route === 'inbox') view.innerHTML = renderInbox(state);
   else view.innerHTML = renderLanding(state, today, nowIso);
 
-  // Restore the scratch panel exactly as it was (preserves in-progress text).
-  if (scratchSnapshot) {
-    document.querySelectorAll('.scratch-panel').forEach(panel => {
-      const tmp = document.createElement('div');
-      tmp.innerHTML = scratchSnapshot;
-      panel.replaceWith(tmp.firstElementChild);
-    });
-    restoreScratchFocus();
+  // Restore value and focus to the active scratch input.
+  if (scratchSnap) {
+    const all = document.querySelectorAll(`[data-scratch-input][data-id="${CSS.escape(scratchSnap.id)}"]`);
+    const el = Array.from(all).find(e => e.offsetParent !== null) || all[0];
+    if (el) { el.value = scratchSnap.value; el.focus(); el.setSelectionRange(scratchSnap.sel, scratchSnap.sel); }
   }
 
   renderStatus();
@@ -140,32 +137,8 @@ function focusScratchBullet(id) {
     const el = Array.from(all).find(e => e.offsetParent !== null) || all[0];
     if (!el) return;
     el.focus();
-    const sel = window.getSelection();
-    if (sel) {
-      const range = document.createRange();
-      range.selectNodeContents(el);
-      range.collapse(false);
-      sel.removeAllRanges();
-      sel.addRange(range);
-    }
+    el.setSelectionRange(el.value.length, el.value.length);
   });
-}
-
-function restoreScratchFocus() {
-  if (!state.ui.scratchFocus) return;
-  const { id } = state.ui.scratchFocus;
-  const all = document.querySelectorAll(`[data-scratch-input][data-id="${CSS.escape(id)}"]`);
-  const el = Array.from(all).find(e => e.offsetParent !== null) || all[0];
-  if (!el) return;
-  el.focus();
-  const sel = window.getSelection();
-  if (sel) {
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    range.collapse(false);
-    sel.removeAllRanges();
-    sel.addRange(range);
-  }
 }
 
 let scratchSaveTimer = null;
@@ -181,7 +154,7 @@ function flushScratchSave(id, text) {
 
 function scratchEnter(el) {
   const id = el.dataset.id;
-  const text = el.textContent.trim();
+  const text = el.value.trim();
   const date = state.ui.scratchDate || M.todayIso();
   if (id === '__new') {
     if (!text) return;
@@ -438,14 +411,14 @@ document.addEventListener('keydown', (e) => {
   if (e.target.dataset && e.target.dataset.stepInput && e.key === 'Enter') { e.preventDefault(); addStep(e.target.dataset.stepInput); }
   if (e.target.dataset && e.target.dataset.scratchInput !== undefined) {
     if (e.key === 'Enter') { e.preventDefault(); scratchEnter(e.target); }
-    if (e.key === 'Backspace' && !e.target.textContent) { e.preventDefault(); scratchDeleteBullet(e.target); }
+    if (e.key === 'Backspace' && !e.target.value) { e.preventDefault(); scratchDeleteBullet(e.target); }
   }
 });
 document.addEventListener('input', (e) => {
   if (e.target.id === 'capture') previewCapture();
   if (e.target.dataset && e.target.dataset.scratchInput !== undefined) {
     const id = e.target.dataset.id;
-    if (id !== '__new') scheduleScratchSave(id, e.target.textContent.trim());
+    if (id !== '__new') scheduleScratchSave(id, e.target.value.trim());
   }
 });
 document.addEventListener('focusin', (e) => {
@@ -455,8 +428,9 @@ document.addEventListener('focusin', (e) => {
 });
 document.addEventListener('focusout', (e) => {
   if (e.target.dataset && e.target.dataset.scratchInput !== undefined) {
+    if (!e.target.isConnected) return; // removed from DOM by redrawScratch — skip
     const id = e.target.dataset.id;
-    const text = e.target.textContent.trim();
+    const text = e.target.value.trim();
     if (id === '__new') { if (text) setTimeout(() => scratchCreateFirst(text), 0); }
     else flushScratchSave(id, text);
     setTimeout(() => {

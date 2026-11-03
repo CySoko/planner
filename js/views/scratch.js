@@ -29,7 +29,7 @@ function bulletHtml(r, isPast) {
   const showCarry = isPast && !r.done;
   return `<li class="scratch-item${r.done ? ' done' : ''}" data-id="${esc(r.id)}">
     <button class="chk${r.done ? ' on' : ''}" data-act="scratch-check" data-id="${esc(r.id)}" aria-label="${r.done ? 'Mark not done' : 'Mark done'}">${r.done ? '✓' : ''}</button>
-    <span class="scratch-text" contenteditable="true" data-id="${esc(r.id)}" data-scratch-input spellcheck="false">${esc(r.text)}</span>
+    <input class="scratch-text" type="text" value="${esc(r.text)}" data-id="${esc(r.id)}" data-scratch-input autocomplete="off" spellcheck="false">
     ${showCarry ? `<button class="btn small scratch-carry" data-act="scratch-carry" data-id="${esc(r.id)}">→ today</button>` : '<span></span>'}
   </li>`;
 }
@@ -37,7 +37,7 @@ function bulletHtml(r, isPast) {
 function emptyBullet() {
   return `<li class="scratch-item" data-id="__new">
     <button class="chk" disabled aria-hidden="true"></button>
-    <span class="scratch-text" contenteditable="true" data-id="__new" data-scratch-input data-placeholder="type a task…" spellcheck="false"></span>
+    <input class="scratch-text" type="text" placeholder="type a task…" data-id="__new" data-scratch-input autocomplete="off" spellcheck="false">
     <span></span>
   </li>`;
 }

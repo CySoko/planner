@@ -193,9 +193,8 @@ textarea { font-size: 17px; resize: vertical; }
 .scratch-item { display: grid; grid-template-columns: 32px 1fr auto; align-items: center; min-height: 34px; padding: 1px 14px 1px 10px; gap: 6px; }
 .scratch-item:hover { background: var(--hover); }
 .scratch-item .chk { width: 20px; height: 20px; border-radius: 5px; font-size: 11px; min-height: unset; padding: 0; }
-.scratch-text { font-size: 15px; line-height: 1.4; outline: none; min-width: 0; cursor: text; }
+.scratch-text { font-size: 15px; line-height: 1.4; outline: none; border: none; background: transparent; color: inherit; width: 100%; min-width: 0; padding: 0; font-family: inherit; }
 .scratch-item.done .scratch-text { text-decoration: line-through; color: var(--muted); }
-.scratch-text[data-placeholder]:empty::before { content: attr(data-placeholder); color: var(--dim); pointer-events: none; }
 .scratch-carry { font-size: 11px; min-height: 24px; padding: 0 7px; opacity: .65; white-space: nowrap; }
 .scratch-carry:hover { opacity: 1; }
 .scratch-slot { display: none; }
