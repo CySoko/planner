@@ -6,7 +6,8 @@ const { setupSheet } = require('../apps-script/Setup.js');
 test('headers match the spec exactly', () => {
   assert.deepEqual(HEADERS.Items, ['id', 'area', 'group', 'title', 'date', 'time', 'type', 'repeat', 'status', 'notes', 'created', 'updated']);
   assert.deepEqual(HEADERS.Steps, ['id', 'itemId', 'text', 'done', 'order', 'updated']);
-  assert.deepEqual(HEADERS.Inbox, ['id', 'text', 'source', 'capturedAt', 'guessArea', 'guessGroup', 'guessDate', 'guessType', 'confidence', 'suggestion', 'status']);
+  assert.deepEqual(HEADERS.Inbox, ['id', 'text', 'source', 'capturedAt', 'guessArea', 'guessGroup', 'guessDate', 'guessType', 'confidence', 'suggestion', 'status',
+    'guessTitle', 'guessTime', 'guessParent', 'alternatives']);
   assert.deepEqual(HEADERS.Context, ['kind', 'key', 'value', 'active']);
   assert.deepEqual(HEADERS.Quotes, ['text', 'author', 'active']);
   assert.deepEqual(HEADERS.Log, ['inboxId', 'field', 'guessed', 'chosen', 'at']);
@@ -38,7 +39,7 @@ function fakeSpreadsheet(initialTabs) {
       getLastColumn: () => Math.max(0, ...s.rows.map(r => r.length)),
       getRange: (row, col, nr, nc) => ({
         getValues: () => Array.from({ length: nr }, (_, i) => Array.from({ length: nc }, (_, j) => (s.rows[row - 1 + i] || [])[col - 1 + j] ?? '')),
-        setValues: (vals) => { vals.forEach((v, i) => { s.rows[row - 1 + i] = v.slice(); }); },
+        setValues: (vals) => { vals.forEach((v, i) => { const r = (s.rows[row - 1 + i] || []).slice(); v.forEach((x, j) => { r[col - 1 + j] = x; }); s.rows[row - 1 + i] = r; }); },
         setFontWeight: () => {},
         setNumberFormat: (f) => { s.format = f; }
       }),
@@ -77,4 +78,19 @@ test('setupSheet run twice changes nothing the second time', () => {
   const before = JSON.stringify([...ss.tabs.entries()].map(([k, s]) => [k, s.rows]));
   setupSheet(ss);
   assert.equal(JSON.stringify([...ss.tabs.entries()].map(([k, s]) => [k, s.rows])), before);
+});
+
+test('setupSheet adds new columns at the end of an existing tab and leaves its rows alone', () => {
+  const ss = fakeSpreadsheet([]);
+  const inbox = ss.insertSheet('Inbox');
+  inbox.rows.push(HEADERS.Inbox.slice(0, 11), ['in1', 'old capture']);
+  setupSheet(ss);
+  assert.deepEqual(inbox.rows[0], HEADERS.Inbox);
+  assert.deepEqual(inbox.rows[1], ['in1', 'old capture']);
+});
+
+test('setupSheet refuses to touch a tab whose headers were reordered', () => {
+  const ss = fakeSpreadsheet([]);
+  ss.insertSheet('Steps').rows.push(['itemId', 'id']);
+  assert.throws(() => setupSheet(ss), /do not match Schema/);
 });

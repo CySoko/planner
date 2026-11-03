@@ -4,7 +4,8 @@
 const HEADERS = {
   Items: ['id', 'area', 'group', 'title', 'date', 'time', 'type', 'repeat', 'status', 'notes', 'created', 'updated'],
   Steps: ['id', 'itemId', 'text', 'done', 'order', 'updated'],
-  Inbox: ['id', 'text', 'source', 'capturedAt', 'guessArea', 'guessGroup', 'guessDate', 'guessType', 'confidence', 'suggestion', 'status'],
+  Inbox: ['id', 'text', 'source', 'capturedAt', 'guessArea', 'guessGroup', 'guessDate', 'guessType', 'confidence', 'suggestion', 'status',
+          'guessTitle', 'guessTime', 'guessParent', 'alternatives'],
   Context: ['kind', 'key', 'value', 'active'],
   Quotes: ['text', 'author', 'active'],
   Log: ['inboxId', 'field', 'guessed', 'chosen', 'at']

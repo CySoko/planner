@@ -14,6 +14,17 @@ function setupSheet(ss) {
       const header = sheet.getRange(1, 1, 1, cols.length);
       header.setValues([cols]);
       header.setFontWeight('bold');
+    } else {
+      // Add any new columns at the END, only if the existing headers match the start of the list.
+      const have = sheet.getRange(1, 1, 1, Math.max(1, sheet.getLastColumn())).getValues()[0].filter(String);
+      const prefixOk = have.every((h, i) => h === cols[i]);
+      if (!prefixOk) throw new Error('Headers on "' + tab + '" do not match Schema. Fix by hand; nothing was changed.');
+      if (have.length < cols.length) {
+        const extra = sheet.getRange(1, have.length + 1, 1, cols.length - have.length);
+        extra.setValues([cols.slice(have.length)]);
+        extra.setFontWeight('bold');
+        created.push(tab + ' (+' + (cols.length - have.length) + ' columns)');
+      }
     }
     sheet.setFrozenRows(1);
     // Plain text everywhere, so Sheets never turns ids or dates into date values.
