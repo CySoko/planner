@@ -4,11 +4,12 @@ import * as M from './model.js';
 import { renderLanding } from './views/landing.js';
 import { renderArea } from './views/area.js';
 import { renderInbox } from './views/inbox.js';
+import { renderScratch } from './views/scratch.js';
 import { esc } from './views/ui.js';
 
-const TAB_KEY = { Items: 'items', Steps: 'steps', Inbox: 'inbox', Context: 'context', Quotes: 'quotes' };
+const TAB_KEY = { Items: 'items', Steps: 'steps', Inbox: 'inbox', Context: 'context', Quotes: 'quotes', Scratch: 'scratch' };
 const KEY_OF = { Context: r => r.kind + '|' + r.key, Quotes: r => r.text };
-const empty = () => ({ items: [], steps: [], inbox: [], quotes: [], context: [] });
+const empty = () => ({ items: [], steps: [], inbox: [], quotes: [], context: [], scratch: [] });
 
 const state = {
   data: Object.assign(empty(), api.loadCache() || {}),
@@ -16,7 +17,7 @@ const state = {
   sync: 'loading',
   lastSync: null,
   flushing: false,
-  ui: { open: {}, adding: null, offer: null }
+  ui: { open: {}, adding: null, offer: null, scratchDate: null, scratchFocus: null }
 };
 
 const $ = sel => document.querySelector(sel);
@@ -27,10 +28,32 @@ function render() {
   $('#today-big').textContent = M.weekdayOf(today) + ' ' + today.slice(5, 7) + '.' + today.slice(8);
   $('#today-sub').textContent = now.toLocaleString('en-US', { month: 'short' }).toLowerCase() + ' ' + now.getFullYear();
   const route = (location.hash.replace(/^#\/?/, '') || '').split('?')[0];
+  if (!state.ui.scratchDate || state.ui.scratchDate > today) state.ui.scratchDate = today;
+
+  // If a scratch bullet has focus, snapshot the panel so typing is never interrupted.
+  const scratchActive = document.activeElement && document.activeElement.dataset.scratchInput !== undefined;
+  let scratchSnapshot = null;
+  if (scratchActive && !route) {
+    const panel = document.querySelector('.scratch-panel');
+    scratchSnapshot = panel ? panel.outerHTML : null;
+    state.ui.scratchFocus = { id: document.activeElement.dataset.id };
+  }
+
   const view = $('#view');
   if (['school', 'life', 'projects'].includes(route)) view.innerHTML = renderArea(route, state, today, nowIso);
   else if (route === 'inbox') view.innerHTML = renderInbox(state);
   else view.innerHTML = renderLanding(state, today, nowIso);
+
+  // Restore the scratch panel exactly as it was (preserves in-progress text).
+  if (scratchSnapshot) {
+    document.querySelectorAll('.scratch-panel').forEach(panel => {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = scratchSnapshot;
+      panel.replaceWith(tmp.firstElementChild);
+    });
+    restoreScratchFocus();
+  }
+
   renderStatus();
   const sw = $('.switch');
   sw.setAttribute('aria-checked', String(document.documentElement.dataset.theme !== 'dark'));
@@ -90,6 +113,113 @@ function safeParse(text, now) {
 
 function persist() { api.saveCache(state.data); Q.save(state.queue); }
 
+// ---------- scratch ----------
+function saveScratchRowQuiet(row) {
+  const idx = state.data.scratch.findIndex(r => r.id === row.id);
+  if (idx >= 0) state.data.scratch[idx] = row; else state.data.scratch.push(row);
+  state.queue = Q.enqueue(state.queue, { id: M.newId('op'), kind: 'upsert', payload: { tab: 'Scratch', rows: [row] } });
+  persist();
+  flushSoon();
+}
+
+function redrawScratch() {
+  const today = M.todayIso();
+  const date = state.ui.scratchDate || today;
+  const rows = M.scratchForDate(state.data.scratch, date);
+  const html = renderScratch(rows, date, today);
+  document.querySelectorAll('.scratch-panel').forEach(panel => {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    panel.replaceWith(tmp.firstElementChild);
+  });
+}
+
+function focusScratchBullet(id) {
+  requestAnimationFrame(() => {
+    const all = document.querySelectorAll(`[data-scratch-input][data-id="${CSS.escape(id)}"]`);
+    const el = Array.from(all).find(e => e.offsetParent !== null) || all[0];
+    if (!el) return;
+    el.focus();
+    const sel = window.getSelection();
+    if (sel) {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      range.collapse(false);
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+  });
+}
+
+function restoreScratchFocus() {
+  if (!state.ui.scratchFocus) return;
+  const { id } = state.ui.scratchFocus;
+  const all = document.querySelectorAll(`[data-scratch-input][data-id="${CSS.escape(id)}"]`);
+  const el = Array.from(all).find(e => e.offsetParent !== null) || all[0];
+  if (!el) return;
+  el.focus();
+  const sel = window.getSelection();
+  if (sel) {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+}
+
+let scratchSaveTimer = null;
+function scheduleScratchSave(id, text) {
+  clearTimeout(scratchSaveTimer);
+  scratchSaveTimer = setTimeout(() => flushScratchSave(id, text), 600);
+}
+function flushScratchSave(id, text) {
+  clearTimeout(scratchSaveTimer);
+  const row = state.data.scratch.find(r => r.id === id);
+  if (row && row.text !== text) saveScratchRowQuiet({ ...row, text, updated: nowIso() });
+}
+
+function scratchEnter(el) {
+  const id = el.dataset.id;
+  const text = el.textContent.trim();
+  const date = state.ui.scratchDate || M.todayIso();
+  if (id === '__new') {
+    if (!text) return;
+    const row = { ...M.insertAfter(state.data.scratch, date, null, nowIso()), text };
+    saveScratchRowQuiet(row);
+    const next = M.insertAfter(state.data.scratch, date, row.id, nowIso());
+    saveScratchRowQuiet(next);
+    redrawScratch();
+    focusScratchBullet(next.id);
+  } else {
+    flushScratchSave(id, text);
+    const next = M.insertAfter(state.data.scratch, date, id, nowIso());
+    saveScratchRowQuiet(next);
+    redrawScratch();
+    focusScratchBullet(next.id);
+  }
+}
+
+function scratchDeleteBullet(el) {
+  const id = el.dataset.id;
+  if (id === '__new') return;
+  const date = state.ui.scratchDate || M.todayIso();
+  const sorted = M.scratchForDate(state.data.scratch, date);
+  const idx = sorted.findIndex(r => r.id === id);
+  const prevId = idx > 0 ? sorted[idx - 1].id : null;
+  const row = state.data.scratch.find(r => r.id === id);
+  if (row) saveScratchRowQuiet({ ...row, deleted: true, updated: nowIso() });
+  redrawScratch();
+  if (prevId) focusScratchBullet(prevId);
+}
+
+function scratchCreateFirst(text) {
+  const date = state.ui.scratchDate || M.todayIso();
+  const row = { ...M.insertAfter(state.data.scratch, date, null, nowIso()), text };
+  saveScratchRowQuiet(row);
+  redrawScratch();
+}
+
 function saveRows(tab, rows) {
   if (!rows.length) return;
   if (TAB_KEY[tab]) applyRows(state.data, tab, rows);
@@ -103,7 +233,8 @@ async function refresh() {
   try {
     const fresh = await api.loadAll();
     state.data = applyQueued(Object.assign(empty(), {
-      items: fresh.items, steps: fresh.steps, inbox: fresh.inbox, quotes: fresh.quotes, context: fresh.context
+      items: fresh.items, steps: fresh.steps, inbox: fresh.inbox, quotes: fresh.quotes, context: fresh.context,
+      scratch: fresh.scratch || []
     }));
     state.lastSync = new Date();
     if (state.sync !== 'saving') state.sync = state.queue.ops.length ? 'offline' : 'synced';
@@ -266,6 +397,32 @@ document.addEventListener('click', (e) => {
     const o = state.ui.offer; state.ui.offer = null;
     saveRows('Context', [{ kind: 'keyword', key: o.word, value: o.area + '/' + o.group, active: true }]);
   }
+  if (act === 'scratch-prev') {
+    state.ui.scratchDate = M.addDays(state.ui.scratchDate || M.todayIso(), -1);
+    redrawScratch();
+  }
+  if (act === 'scratch-next') {
+    const today = M.todayIso();
+    const next = M.addDays(state.ui.scratchDate || today, 1);
+    if (next <= today) { state.ui.scratchDate = next; redrawScratch(); }
+  }
+  if (act === 'scratch-goto-today') { state.ui.scratchDate = M.todayIso(); redrawScratch(); }
+  if (act === 'scratch-check') {
+    const row = state.data.scratch.find(r => r.id === id);
+    if (row) saveScratchRowQuiet({ ...row, done: !row.done, updated: nowIso() });
+    redrawScratch();
+  }
+  if (act === 'scratch-carry') {
+    const today = M.todayIso();
+    const row = state.data.scratch.find(r => r.id === id);
+    if (row) {
+      const [oldRow, newRow] = M.carryToToday(row, today, nowIso());
+      saveScratchRowQuiet(oldRow);
+      saveScratchRowQuiet(newRow);
+      state.ui.scratchDate = today;
+      redrawScratch();
+    }
+  }
 });
 
 document.addEventListener('submit', (e) => {
@@ -279,8 +436,36 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && !$('#palette').hidden) closePalette();
   if (e.target.id === 'capture' && e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendCapture(); }
   if (e.target.dataset && e.target.dataset.stepInput && e.key === 'Enter') { e.preventDefault(); addStep(e.target.dataset.stepInput); }
+  if (e.target.dataset && e.target.dataset.scratchInput !== undefined) {
+    if (e.key === 'Enter') { e.preventDefault(); scratchEnter(e.target); }
+    if (e.key === 'Backspace' && !e.target.textContent) { e.preventDefault(); scratchDeleteBullet(e.target); }
+  }
 });
-document.addEventListener('input', (e) => { if (e.target.id === 'capture') previewCapture(); });
+document.addEventListener('input', (e) => {
+  if (e.target.id === 'capture') previewCapture();
+  if (e.target.dataset && e.target.dataset.scratchInput !== undefined) {
+    const id = e.target.dataset.id;
+    if (id !== '__new') scheduleScratchSave(id, e.target.textContent.trim());
+  }
+});
+document.addEventListener('focusin', (e) => {
+  if (e.target.dataset && e.target.dataset.scratchInput !== undefined) {
+    state.ui.scratchFocus = { id: e.target.dataset.id };
+  }
+});
+document.addEventListener('focusout', (e) => {
+  if (e.target.dataset && e.target.dataset.scratchInput !== undefined) {
+    const id = e.target.dataset.id;
+    const text = e.target.textContent.trim();
+    if (id === '__new') { if (text) setTimeout(() => scratchCreateFirst(text), 0); }
+    else flushScratchSave(id, text);
+    setTimeout(() => {
+      if (!document.activeElement || document.activeElement.dataset.scratchInput === undefined) {
+        state.ui.scratchFocus = null;
+      }
+    }, 0);
+  }
+});
 
 window.addEventListener('hashchange', () => { state.ui.adding = null; render(); window.scrollTo(0, 0); });
 window.addEventListener('online', () => { flush(); refresh(); });

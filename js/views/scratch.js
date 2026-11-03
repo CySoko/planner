@@ -1,0 +1,43 @@
+import { esc } from './ui.js';
+import { weekdayOf } from '../model.js';
+
+export function renderScratch(rows, date, today) {
+  const isToday = date === today;
+  const isPast = date < today;
+  const dateLabel = weekdayOf(date) + ' ' + date.slice(5, 7) + '.' + date.slice(8);
+  const bullets = rows.length ? rows.map(r => bulletHtml(r, isPast)).join('') : emptyBullet();
+
+  return `<section class="panel scratch-panel" data-date="${esc(date)}">
+    <div class="scratch-head">
+      <div class="scratch-title">
+        <span class="h2 scratch-h">Today</span>
+        <span class="mono scratch-date">${esc(dateLabel)}</span>
+      </div>
+      <div class="scratch-nav-btns">
+        <button class="scratch-nav" data-act="scratch-prev" aria-label="Previous day">‹</button>
+        <button class="scratch-nav" data-act="scratch-next" aria-label="Next day"${isToday ? ' disabled' : ''}>›</button>
+        ${!isToday ? `<button class="btn small scratch-goto" data-act="scratch-goto-today">today</button>` : ''}
+      </div>
+    </div>
+    <ul class="scratch-list">
+      ${bullets}
+    </ul>
+  </section>`;
+}
+
+function bulletHtml(r, isPast) {
+  const showCarry = isPast && !r.done;
+  return `<li class="scratch-item${r.done ? ' done' : ''}" data-id="${esc(r.id)}">
+    <button class="chk${r.done ? ' on' : ''}" data-act="scratch-check" data-id="${esc(r.id)}" aria-label="${r.done ? 'Mark not done' : 'Mark done'}">${r.done ? '✓' : ''}</button>
+    <span class="scratch-text" contenteditable="true" data-id="${esc(r.id)}" data-scratch-input spellcheck="false">${esc(r.text)}</span>
+    ${showCarry ? `<button class="btn small scratch-carry" data-act="scratch-carry" data-id="${esc(r.id)}">→ today</button>` : '<span></span>'}
+  </li>`;
+}
+
+function emptyBullet() {
+  return `<li class="scratch-item" data-id="__new">
+    <button class="chk" disabled aria-hidden="true"></button>
+    <span class="scratch-text" contenteditable="true" data-id="__new" data-scratch-input data-placeholder="type a task…" spellcheck="false"></span>
+    <span></span>
+  </li>`;
+}

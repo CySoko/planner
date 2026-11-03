@@ -1,8 +1,11 @@
-import { groupByDay, areaSummary, quoteForDate, isStalled } from '../model.js';
+import { groupByDay, areaSummary, quoteForDate, isStalled, scratchForDate } from '../model.js';
 import { esc, AREAS, AREA_LABEL, groupName, groupsFor, shortDate, timeLabel, check } from './ui.js';
+import { renderScratch } from './scratch.js';
 
 export function renderLanding(state, today, nowIso) {
-  const { items, steps, quotes, context, inbox } = state.data;
+  const { items, steps, quotes, context, inbox, scratch } = state.data;
+  const scratchDate = state.ui.scratchDate || today;
+  const scratchHtml = renderScratch(scratchForDate(scratch || [], scratchDate), scratchDate, today);
   const q = quoteForDate(today, quotes);
   const days = groupByDay(items, steps, today, 7);
   const weekItems = days.flatMap(d => d.items);
@@ -39,7 +42,7 @@ export function renderLanding(state, today, nowIso) {
         </div>
         <div class="quote">${q ? esc(q.text) : '<span class="muted">Add quotes in the Quotes tab.</span>'}</div>
       </section>
-
+      <div class="scratch-slot">${scratchHtml}</div>
       <section class="panel" aria-labelledby="week-h">
         <div class="panel-head">
           <div><h2 id="week-h">This week</h2><div class="muted">Due or happening <b style="color:var(--date)">${shortDate(days[0].date)} → ${shortDate(days[6].date)}</b></div></div>
@@ -50,6 +53,7 @@ export function renderLanding(state, today, nowIso) {
     </div>
 
     <aside class="col-side">
+      ${scratchHtml}
       <section class="panel areas" aria-labelledby="areas-h">
         <a class="inbox-btn" href="#/inbox"><span>Inbox</span><span><b>${newInbox}</b> to sort →</span></a>
         <h2 id="areas-h">Areas</h2>

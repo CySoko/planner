@@ -62,7 +62,7 @@ function doGet(e) {
     return json_({
       ok: true,
       items: readTab_('Items'), steps: readTab_('Steps'), inbox: readTab_('Inbox'),
-      quotes: readTab_('Quotes'), context: readTab_('Context'),
+      quotes: readTab_('Quotes'), context: readTab_('Context'), scratch: readTab_('Scratch'),
       serverTime: new Date().toISOString()
     });
   } catch (err) {

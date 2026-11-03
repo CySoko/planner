@@ -124,3 +124,30 @@ export function acceptSuggestion(inboxRow, suggestionItems, now) {
 }
 
 export function dismissCapture(inboxRow) { return { ...inboxRow, status: 'dismissed' }; }
+
+// ---- Scratch ----
+
+export function scratchForDate(rows, date) {
+  return (rows || [])
+    .filter(r => r.date === date && !r.deleted)
+    .sort((a, b) => Number(a.order) - Number(b.order));
+}
+
+export function insertAfter(rows, date, afterId, now) {
+  const sorted = scratchForDate(rows, date);
+  const idx = afterId ? sorted.findIndex(r => r.id === afterId) : -1;
+  const after = idx >= 0 ? sorted[idx] : null;
+  const next = after ? sorted[idx + 1] : (!afterId && sorted.length ? sorted[0] : null);
+  const afterOrder = after ? Number(after.order) : 0;
+  const nextOrder = next ? Number(next.order) : afterOrder + 2;
+  const gap = nextOrder - afterOrder;
+  const order = gap > 0.001 ? afterOrder + gap / 2 : afterOrder + 1;
+  return { id: newId('sc'), date, text: '', done: false, order, updated: now, deleted: false };
+}
+
+export function carryToToday(row, today, now) {
+  return [
+    { ...row, done: true, updated: now },
+    { id: newId('sc'), date: today, text: row.text, done: false, order: Date.parse(now), updated: now, deleted: false }
+  ];
+}

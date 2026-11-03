@@ -149,3 +149,41 @@ test('acceptSuggestion: a Claude suggestion with 3 items creates 3 Items', () =>
 test('dismissCapture marks the inbox row dismissed and files nothing', () => {
   assert.equal(dismissCapture(inbox).status, 'dismissed');
 });
+
+import { scratchForDate, insertAfter, carryToToday } from '../js/model.js';
+
+const TODAY = '2026-11-02';
+const sc = (o) => ({ id: 'sc_1', date: TODAY, text: 'foo', done: false, order: 1, updated: NOW, deleted: false, ...o });
+
+test('scratchForDate: only that date\'s non-deleted rows, sorted by order; new day returns []', () => {
+  const rows = [
+    sc({ id: 'a', order: 2 }),
+    sc({ id: 'b', order: 1 }),
+    sc({ id: 'c', order: 3, deleted: true }),
+    sc({ id: 'd', date: '2026-11-01', order: 1 }),
+  ];
+  assert.deepEqual(scratchForDate(rows, TODAY).map(r => r.id), ['b', 'a']);
+  assert.deepEqual(scratchForDate(rows, '2026-11-03'), []);
+});
+
+test('insertAfter: new row order falls between afterId and the next bullet', () => {
+  const rows = [sc({ id: 'a', order: 1 }), sc({ id: 'b', order: 3 })];
+  const nr = insertAfter(rows, TODAY, 'a', NOW);
+  assert.ok(nr.order > 1 && nr.order < 3, `order ${nr.order} not between 1 and 3`);
+  assert.equal(nr.date, TODAY);
+  assert.equal(nr.text, '');
+  assert.equal(nr.done, false);
+  assert.equal(nr.deleted, false);
+});
+
+test('carryToToday: returns old row done:true and new today row with same text, done:false', () => {
+  const row = sc({ id: 'sc_old', date: '2026-11-01', text: 'buy tape' });
+  const [old, newRow] = carryToToday(row, TODAY, NOW);
+  assert.equal(old.id, 'sc_old');
+  assert.equal(old.done, true);
+  assert.equal(old.updated, NOW);
+  assert.equal(newRow.date, TODAY);
+  assert.equal(newRow.text, 'buy tape');
+  assert.equal(newRow.done, false);
+  assert.notEqual(newRow.id, 'sc_old');
+});

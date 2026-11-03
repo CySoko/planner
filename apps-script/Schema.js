@@ -8,7 +8,8 @@ const HEADERS = {
           'guessTitle', 'guessTime', 'guessParent', 'alternatives'],
   Context: ['kind', 'key', 'value', 'active'],
   Quotes: ['text', 'author', 'active'],
-  Log: ['inboxId', 'field', 'guessed', 'chosen', 'at']
+  Log: ['inboxId', 'field', 'guessed', 'chosen', 'at'],
+  Scratch: ['id', 'date', 'text', 'done', 'order', 'updated', 'deleted']
 };
 
 // Context rows: [kind, key, value, active]

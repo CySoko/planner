@@ -179,10 +179,33 @@ textarea { font-size: 17px; resize: vertical; }
 .suggest { border-left: 3px solid var(--date); padding-left: 12px; }
 .offer { padding: 14px 18px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 
+/* scratch panel */
+.scratch-panel { padding: 0; --area: var(--date); }
+.scratch-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 18px 10px; border-bottom: 1px solid var(--line); }
+.scratch-title { display: flex; flex-direction: column; gap: 2px; }
+.scratch-h { font-size: 20px; }
+.scratch-date { font-size: 11px; color: var(--muted); letter-spacing: .08em; }
+.scratch-nav-btns { display: flex; align-items: center; gap: 6px; }
+.scratch-nav { background: none; border: 1px solid var(--line-strong); border-radius: 6px; width: 30px; height: 30px; font-size: 18px; line-height: 1; cursor: pointer; color: var(--text); display: inline-flex; align-items: center; justify-content: center; }
+.scratch-nav:disabled { opacity: .3; cursor: default; }
+.scratch-goto { font-size: 11px; padding: 0 8px; min-height: 26px; }
+.scratch-list { list-style: none; margin: 0; padding: 6px 0 10px; }
+.scratch-item { display: grid; grid-template-columns: 32px 1fr auto; align-items: center; min-height: 34px; padding: 1px 14px 1px 10px; gap: 6px; }
+.scratch-item:hover { background: var(--hover); }
+.scratch-item .chk { width: 20px; height: 20px; border-radius: 5px; font-size: 11px; min-height: unset; padding: 0; }
+.scratch-text { font-size: 15px; line-height: 1.4; outline: none; min-width: 0; cursor: text; }
+.scratch-item.done .scratch-text { text-decoration: line-through; color: var(--muted); }
+.scratch-text[data-placeholder]:empty::before { content: attr(data-placeholder); color: var(--dim); pointer-events: none; }
+.scratch-carry { font-size: 11px; min-height: 24px; padding: 0 7px; opacity: .65; white-space: nowrap; }
+.scratch-carry:hover { opacity: 1; }
+.scratch-slot { display: none; }
+
 /* status bar */
 .status { margin: 6px -28px 0; padding: 10px 28px calc(10px + env(safe-area-inset-bottom)); display: flex; flex-wrap: wrap; gap: 6px 18px; justify-content: space-between; font-size: 12px; color: #fff; background: var(--status-bg); }
 
 @media (max-width: 700px) {
+  .scratch-slot { display: block; }
+  .col-side > .scratch-panel { display: none; }
   .app { padding-left: 16px; padding-right: 16px; }
   .status { margin-left: -16px; margin-right: -16px; padding-left: 16px; padding-right: 16px; }
   .wordmark { font-size: 26px; }

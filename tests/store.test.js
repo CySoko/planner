@@ -5,7 +5,7 @@ const { HEADERS } = require('../apps-script/Schema.js');
 
 test('round-trips every tab', () => {
   for (const tab of Object.keys(HEADERS)) {
-    const obj = Object.fromEntries(HEADERS[tab].map((c, i) => [c, c === 'done' || c === 'active' ? true : `${tab}-${c}-${i}`]));
+    const obj = Object.fromEntries(HEADERS[tab].map((c, i) => [c, c === 'done' || c === 'active' || c === 'deleted' ? true : `${tab}-${c}-${i}`]));
     const back = toObjects(tab, [HEADERS[tab], toRow(tab, obj)])[0];
     assert.deepEqual(back, obj, tab);
   }
