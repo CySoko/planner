@@ -10,7 +10,7 @@ export function renderInbox(state) {
 
   return `<div>
     <div class="page-head">
-      <div><a class="back" href="#/">← ~/planner</a><h1 class="page-title" style="color:var(--text)">Inbox</h1>
+      <div><a class="back btn primary" href="#/">← ~/planner</a><h1 class="page-title" style="color:var(--text)">Inbox</h1>
       <div class="muted"><b style="color:var(--text)">${rows.length} to sort</b> · nothing is filed until you accept it</div></div>
     </div>
     ${offer ? `<div class="panel offer"><span>Add <b>“${esc(offer.word)}”</b> as a keyword for <b>${esc(groupName(context, offer.group))}</b>? Next time it sorts itself.</span>

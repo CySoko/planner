@@ -37,7 +37,7 @@ export function renderArea(area, state, today, nowIso) {
   const form = state.ui.adding === area ? addForm(area, groups) : '';
   return `<div class="area-${area}">
     <div class="page-head">
-      <div><a class="back" href="#/">← ~/planner</a>
+      <div><a class="back btn primary" href="#/">← ~/planner</a>
         <h1 class="page-title">${AREA_LABEL[area]}</h1>
         <div class="muted"><b style="color:var(--text)">${open.length} big item${open.length === 1 ? '' : 's'}</b> · ${stepsLeft} step${stepsLeft === 1 ? '' : 's'} left</div></div>
       <button class="btn primary" data-act="toggle-add" data-area="${area}">+ add task</button>

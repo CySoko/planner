@@ -25,7 +25,7 @@ main { flex: 1; outline: none; }
 .today-sub { font-size: 11px; color: var(--muted); letter-spacing: .1em; margin-top: 4px; }
 
 /* buttons */
-.btn { min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--line-strong); background: transparent; cursor: pointer; font-size: 14px; font-weight: 500; transition: transform .2s, box-shadow .3s, filter .3s; }
+.btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--line-strong); background: transparent; cursor: pointer; font-size: 14px; font-weight: 500; transition: transform .2s, box-shadow .3s, filter .3s; text-decoration: none; }
 .btn:hover { transform: translateY(-1px); }
 .btn.primary { background: var(--btn); color: var(--btn-text); border-color: var(--btn); box-shadow: 0 10px 30px -12px var(--glow); }
 .btn.primary:hover { box-shadow: 0 0 26px -4px var(--glow); filter: brightness(1.08); }
