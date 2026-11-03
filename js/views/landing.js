@@ -37,7 +37,7 @@ export function renderLanding(state, today, nowIso) {
           </div>
           <span class="mono breathe-label">breathe</span>
         </div>
-        <div class="quote">${q ? `<q>${esc(q.text)}</q>` : '<span class="muted">Add quotes in the Quotes tab.</span>'}</div>
+        <div class="quote">${q ? esc(q.text) : '<span class="muted">Add quotes in the Quotes tab.</span>'}</div>
       </section>
 
       <section class="panel" aria-labelledby="week-h">
