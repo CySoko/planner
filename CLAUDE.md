@@ -46,3 +46,11 @@ Cy's personal planner. The site is plain HTML/CSS/ES modules served by GitHub Pa
   3. Never run `clasp deploy` without `-i`, because that creates a new URL and breaks the site and Siri.
   4. After deploying, ask Cy to open `<exec URL>?action=all` and confirm it shows `{"ok":true`.
 - The /exec URL is in `js/config.js`. Never change it.
+
+## Apps Script workflow
+- apps-script/ in this repo is the only place backend code is edited. Never suggest editing in the Apps Script web editor.
+- After backend changes: run `npm test`, commit, then `npx @google/clasp push`.
+- `clasp push` only updates the draft code. Making it live needs
+  `npx @google/clasp deploy -i AKfycbwJ2ny0bgtCA9Nsb_ObAF6TA8vdzD1fEiyOOe_8Z_r8IgltbwYzPaLtbt9etKfFfSEW -d "<what changed>"`
+  and only after Cy says OK. Never deploy without -i.
+- Never run `clasp pull` without checking `git status` first. It overwrites local files.
