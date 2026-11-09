@@ -5,6 +5,30 @@ Cy's personal planner. The site is plain HTML/CSS/ES modules served by GitHub Pa
 - Design spec: `docs/superpowers/specs/2026-11-02-sokogen-planner-design.md`
 - Build plan: `docs/superpowers/plans/2026-11-02-sokogen-planner.md`
 
+## How Cy works (read first: saves tokens)
+- Cy previews with **VS Code + Live Server**. The page reloads on every save, so **never launch a browser, take screenshots or start a server to check your work** unless Cy asks. Make the change, say what changed, and stop.
+- One change per request. Go straight to the file in the map below instead of searching the repo. Read only the section you need, never whole folders.
+- Ask a short question when the target is unclear; don't explore to guess it.
+
+## File map
+| To change | File | Where |
+|---|---|---|
+| Any color (light + dark) | `css/tokens.css` | `:root[data-theme="light"]` and `[data-theme="dark"]` blocks |
+| Header, wordmark, date, theme switch | `css/app.css` `/* header */`, `/* buttons */` | markup in `index.html` |
+| "+ add task" box | `css/app.css` `/* palette */` | markup in `index.html`, logic in `js/main.js` actions |
+| Breathing orb + quote | `css/app.css` `/* always remember */` | markup in `js/views/landing.js` |
+| This week itinerary (day blocks, rows, time labels) | `css/app.css` `/* this week */` | `js/views/landing.js` (`row()`), dates/grouping in `js/model.js` (`groupByDay`) |
+| Today scratchlist | `css/app.css` `/* scratch panel */` | `js/views/scratch.js`, logic in `js/main.js` `// ---------- scratch ----------` |
+| Areas doors + stats | `css/app.css` `/* areas */` | `js/views/landing.js` |
+| School / Life / Projects pages, item cards, checklists | `css/app.css` `/* area pages */` | `js/views/area.js` |
+| Inbox review cards | `css/app.css` `/* inbox */` | `js/views/inbox.js`, accept logic in `js/model.js` (`acceptCapture`) |
+| Bottom status bar | `css/app.css` `/* status bar */` | `js/main.js` `renderStatus()` |
+| Phone layout | `css/app.css` `@media (max-width: 700px)` at the end | |
+| Shared view helpers (escape, labels, checkbox) | `js/views/ui.js` | |
+| Saving, syncing, offline queue, clicks/keys | `js/main.js` | sections: rendering, data, scratch, actions, events |
+| Sheet columns / tabs | `apps-script/Schema.js` | backend: needs clasp push + Cy's OK to deploy |
+| Capture parsing rules | `apps-script/Parse.js` | tests: `tests/fixtures/phrases.json` |
+
 ## Always
 - Run `npm test` before every commit. Logic changes come with a test. Pure functions belong in `js/model.js` and `apps-script/*.js`.
 - Sheet columns: never reorder or delete them. New columns go only at the END of a list in `apps-script/Schema.js`. Then Cy re-runs `setupSheet`, which appends the missing headers safely.
