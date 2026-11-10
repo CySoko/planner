@@ -1,5 +1,5 @@
 import { groupByDay, areaSummary, quoteForDate, isStalled, scratchForDate } from '../model.js';
-import { esc, AREAS, AREA_LABEL, groupName, groupsFor, shortDate, check } from './ui.js';
+import { esc, AREAS, AREA_LABEL, groupName, allGroups, groupsFor, shortDate, check } from './ui.js';
 import { renderScratch } from './scratch.js';
 
 export function renderLanding(state, today, nowIso) {
@@ -15,7 +15,7 @@ export function renderLanding(state, today, nowIso) {
   const colHtml = days.map(d => `
     <div class="wk-col${d.today ? ' is-today' : ''}">
       <div class="wk-head"><span class="wd">${d.weekday}</span><span class="num">${d.num}</span></div>
-      ${d.items.length ? `<div class="wk-items">${d.items.map(it => wkCard(it, context)).join('')}</div>` : `<div class="wk-empty">${d.today ? 'Nothing due today.' : '—'}</div>`}
+      ${d.items.length ? `<div class="wk-items">${d.items.map(it => wkCard(it, context, state.ui.editing)).join('')}</div>` : `<div class="wk-empty">${d.today ? 'Nothing due today.' : '—'}</div>`}
     </div>`).join('');
 
   const doors = AREAS.map(a => {
@@ -75,16 +75,30 @@ function wkLabel(it) {
   return { text: it.time ? 'TO DO \u00b7 ' + it.time : 'TO DO', cls: 'do' };
 }
 
-function wkCard(it, context) {
+function wkCard(it, context, editingId) {
   const done = it.status === 'done';
+  const editing = editingId === it.id;
   const box = it.occurrence ? '<span></span>' : check(done, 'toggle-item', it.id, it.title, it.area);
   const label = wkLabel(it);
   const shortGroup = groupName(context, it.group).split(' \u00b7 ')[0];
-  return `<div class="wk-card area-${esc(it.area)}${done ? ' done' : ''}">
+  const pencil = `<button class="wk-edit" data-act="edit-item" data-id="${esc(it.id)}" aria-label="Edit ${esc(it.title)}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>`;
+  const groups = allGroups(context);
+  const editForm = !editing ? '' : `<form class="wk-pop" data-form="edit-item" data-id="${esc(it.id)}">
+      <div class="wk-pop-head"><span class="h2">Edit</span><span class="mono muted">${esc(it.area)}</span></div>
+      <label class="wk-f">Title<input type="text" name="title" value="${esc(it.title)}" required></label>
+      <label class="wk-f">Date<input type="date" name="date" value="${esc(it.date || '')}" ${it.repeat === 'weekly' ? 'disabled' : ''}></label>
+      ${it.repeat === 'weekly' ? '<p class="wk-note">Repeats weekly. Changes apply to every week.</p>' : ''}
+      <label class="wk-f">Time<input type="time" name="time" value="${esc(it.time || '')}"></label>
+      <label class="wk-f">Type<select name="type">${['deadline', 'event', 'do-date'].map(t => `<option ${t === it.type ? 'selected' : ''}>${t}</option>`).join('')}</select></label>
+      <label class="wk-f">Where<select name="where">${groups.map(g => `<option value="${esc(g.area + '/' + g.key)}" ${g.area === it.area && g.key === it.group ? 'selected' : ''}>${esc(AREA_LABEL[g.area])} \u00b7 ${esc(g.name)}</option>`).join('')}</select></label>
+      <div class="row-end"><button type="button" class="btn small" data-act="edit-item" data-id="${esc(it.id)}">esc</button><button type="submit" class="btn small primary">save \u21b5</button></div>
+    </form>`;
+  return `<div class="wk-card area-${esc(it.area)}${done ? ' done' : ''}${editing ? ' editing' : ''}">
     <div class="wk-row">${box}<div class="wk-body">
       <div class="wk-title">${esc(it.title)}</div>
       <div class="wk-meta"><span class="tag">${esc(it.area)}</span> \u00b7 ${esc(shortGroup)}</div>
       <span class="time ${label.cls}">${esc(label.text)}</span>
     </div></div>
+    ${pencil}${editForm}
   </div>`;
 }

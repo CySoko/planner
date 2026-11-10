@@ -17,7 +17,7 @@ const state = {
   sync: 'loading',
   lastSync: null,
   flushing: false,
-  ui: { open: {}, adding: null, offer: null, scratchDate: null, scratchFocus: null }
+  ui: { open: {}, adding: null, offer: null, editing: null, scratchDate: null, scratchFocus: null }
 };
 
 const $ = sel => document.querySelector(sel);
@@ -348,6 +348,18 @@ function commitAccept(r) {
   saveRows('Inbox', [r.inbox]);
 }
 
+function saveItemEdit(form) {
+  const it = state.data.items.find(i => i.id === form.dataset.id);
+  if (!it) return;
+  const f = new FormData(form);
+  const edited = M.applyItemEdit(it, {
+    title: f.get('title'), date: f.get('date') || '', time: f.get('time') || '',
+    type: f.get('type'), where: f.get('where')
+  }, nowIso());
+  state.ui.editing = null;
+  saveRows('Items', [edited]);
+}
+
 function updateWkFade(el) { el.classList.toggle('at-end', el.scrollLeft + el.clientWidth >= el.scrollWidth - 4); }
 
 // ---------- events ----------
@@ -380,6 +392,7 @@ document.addEventListener('click', (e) => {
     const o = state.ui.offer; state.ui.offer = null;
     saveRows('Context', [{ kind: 'keyword', key: o.word, value: o.area + '/' + o.group, active: true }]);
   }
+  if (act === 'edit-item') { state.ui.editing = state.ui.editing === id ? null : id; render(); }
   if (act === 'scratch-prev') {
     state.ui.scratchDate = M.addDays(state.ui.scratchDate || M.todayIso(), -1);
     redrawScratch();
@@ -412,12 +425,15 @@ document.addEventListener('submit', (e) => {
   const form = e.target;
   if (form.dataset.form === 'add-item') { e.preventDefault(); addItem(form); }
   if (form.dataset.form === 'accept') { e.preventDefault(); acceptInbox(form); }
+  if (form.dataset.form === 'edit-item') { e.preventDefault(); saveItemEdit(form); }
 });
 
 document.addEventListener('keydown', (e) => {
   if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openPalette(); }
+  if (e.key === 'Escape' && state.ui.editing) { state.ui.editing = null; render(); return; }
   if (e.key === 'Escape' && !$('#palette').hidden) closePalette();
   if (e.target.id === 'capture' && e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendCapture(); }
+  if (e.target.closest && e.target.closest('[data-form="edit-item"]') && e.key === 'Enter') { e.preventDefault(); saveItemEdit(e.target.closest('[data-form="edit-item"]')); return; }
   if (e.target.dataset && e.target.dataset.stepInput && e.key === 'Enter') { e.preventDefault(); addStep(e.target.dataset.stepInput); }
   if (e.target.dataset && e.target.dataset.scratchInput !== undefined) {
     if (e.key === 'Enter') { e.preventDefault(); scratchEnter(e.target); }

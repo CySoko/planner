@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { todayIso, addDays, quoteForDate, groupByDay, areaSummary, countdown, expandRepeats, isStalled, nextAction } from '../js/model.js';
+import { todayIso, addDays, quoteForDate, groupByDay, areaSummary, countdown, expandRepeats, isStalled, nextAction, applyItemEdit } from '../js/model.js';
 
 const quotes = [{ text: 'A', active: true }, { text: 'B', active: true }, { text: 'C', active: false }];
 const item = (o) => ({ id: 'i', area: 'school', group: 'neuro', title: 'T', date: '', time: '', type: 'deadline', repeat: 'none', status: 'open', created: '2026-10-01T00:00:00-07:00', updated: '', ...o });
@@ -186,4 +186,31 @@ test('carryToToday: returns old row done:true and new today row with same text, 
   assert.equal(newRow.text, 'buy tape');
   assert.equal(newRow.done, false);
   assert.notEqual(newRow.id, 'sc_old');
+});
+
+// ---- applyItemEdit ----
+test('applyItemEdit applies title, date, time, type, where and sets updated', () => {
+  const item = { id: 'it_1', title: 'Old', area: 'school', group: 'neuro', date: '2026-11-10', time: '', type: 'deadline', repeat: 'none', status: 'open', updated: '2026-11-08T10:00:00-07:00' };
+  const edited = applyItemEdit(item, { title: 'New title', date: '2026-11-12', time: '14:00', type: 'event', where: 'life/health' }, '2026-11-09T12:00:00-07:00');
+  assert.equal(edited.title, 'New title');
+  assert.equal(edited.date, '2026-11-12');
+  assert.equal(edited.time, '14:00');
+  assert.equal(edited.type, 'event');
+  assert.equal(edited.area, 'life');
+  assert.equal(edited.group, 'health');
+  assert.equal(edited.updated, '2026-11-09T12:00:00-07:00');
+  assert.equal(edited.id, 'it_1');
+});
+
+test('applyItemEdit ignores date change on weekly repeats', () => {
+  const item = { id: 'it_2', title: 'Shift', area: 'life', group: 'work', date: '2026-11-07', time: '11:00', type: 'event', repeat: 'weekly', status: 'open', updated: '2026-11-01T10:00:00-07:00' };
+  const edited = applyItemEdit(item, { date: '2026-11-14', title: 'New shift' }, '2026-11-09T12:00:00-07:00');
+  assert.equal(edited.date, '2026-11-07'); // unchanged
+  assert.equal(edited.title, 'New shift');
+});
+
+test('applyItemEdit ignores blank title', () => {
+  const item = { id: 'it_3', title: 'Keep me', area: 'school', group: 'neuro', date: '', time: '', type: 'deadline', repeat: 'none', status: 'open', updated: '2026-11-01T10:00:00-07:00' };
+  const edited = applyItemEdit(item, { title: '   ' }, '2026-11-09T12:00:00-07:00');
+  assert.equal(edited.title, 'Keep me');
 });
