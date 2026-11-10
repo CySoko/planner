@@ -5,7 +5,7 @@ import { renderLanding } from './views/landing.js';
 import { renderArea } from './views/area.js';
 import { renderInbox } from './views/inbox.js';
 import { renderScratch } from './views/scratch.js';
-import { esc, allGroups, groupName, AREA_LABEL } from './views/ui.js';
+import { esc, allGroups, groupName, AREA_LABEL, shortDate } from './views/ui.js';
 
 const TAB_KEY = { Items: 'items', Steps: 'steps', Inbox: 'inbox', Context: 'context', Quotes: 'quotes', Scratch: 'scratch' };
 const KEY_OF = { Context: r => r.kind + '|' + r.key, Quotes: r => r.text };
@@ -250,13 +250,39 @@ const nowIso = () => api.localIso();
 let capLastText = '';
 let capOverrides = {};
 let capGuess = null;
+let toastTimer = null;
+let toastUndoId = null;
 
 function openPalette() {
   capLastText = ''; capOverrides = {}; capGuess = null;
+  hideToast();
   $('#palette').hidden = false;
   const ta = $('#capture'); ta.value = ''; previewCapture(); ta.focus();
 }
 function closePalette() { $('#palette').hidden = true; $('#capture-error').hidden = true; }
+
+function showToast(html) {
+  clearTimeout(toastTimer);
+  const el = $('#toast');
+  el.innerHTML = html;
+  el.hidden = false;
+  toastTimer = setTimeout(hideToast, 8000);
+}
+function hideToast() {
+  clearTimeout(toastTimer);
+  $('#toast').hidden = true;
+  toastUndoId = null;
+}
+function undoToast() {
+  if (!toastUndoId) return;
+  const it = state.data.items.find(i => i.id === toastUndoId);
+  if (it) saveRows('Items', [{ ...it, status: 'archived', updated: nowIso() }]);
+  toastUndoId = null;
+  const el = $('#toast');
+  el.innerHTML = '<span>Undone</span><button class="toast-btn" data-act="dismiss-toast" aria-label="Dismiss">\u2715</button>';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(hideToast, 3000);
+}
 
 function previewCapture() {
   const text = $('#capture').value.trim();
@@ -338,6 +364,27 @@ function fileCapture() {
   if (r.log.length) saveRows('Log', r.log);
 
   closePalette();
+
+  // Toast
+  const today = M.todayIso();
+  const weekEnd = M.addDays(today, 6);
+  if (chosen.parentId) {
+    const parent = state.data.items.find(i => i.id === chosen.parentId);
+    showToast(`<span>Step added to ${esc(parent ? parent.title : chosen.parentId)}</span><button class="toast-btn" data-act="dismiss-toast" aria-label="Dismiss">\u2715</button>`);
+  } else if (r.items.length) {
+    const it = r.items[0];
+    const gName = groupName(state.data.context, it.group);
+    let msg = `Added to ${esc(AREA_LABEL[it.area])} \u00b7 ${esc(gName)}`;
+    if (it.date) {
+      msg += ` \u00b7 ${esc(shortDate(it.date))}`;
+      if (it.date > weekEnd) msg += ' (outside this week)';
+    } else {
+      msg += ` \u00b7 no date, find it on the ${esc(AREA_LABEL[it.area])} page`;
+    }
+    toastUndoId = it.id;
+    showToast(`<span>${msg}</span><button class="toast-btn" data-act="undo-toast">undo</button><button class="toast-btn" data-act="dismiss-toast" aria-label="Dismiss">\u2715</button>`);
+  }
+
   render();
 }
 
@@ -350,6 +397,7 @@ function sendCapture() {
   state.data.inbox.push(pendingInboxRow(payload));
   persist();
   closePalette();
+  showToast(`<span>Sent to Inbox to sort later</span><button class="toast-btn" data-act="dismiss-toast" aria-label="Dismiss">\u2715</button>`);
   render();
   flushSoon();
 }
@@ -468,6 +516,8 @@ document.addEventListener('click', (e) => {
     const o = state.ui.offer; state.ui.offer = null;
     saveRows('Context', [{ kind: 'keyword', key: o.word, value: o.area + '/' + o.group, active: true }]);
   }
+  if (act === 'undo-toast') undoToast();
+  if (act === 'dismiss-toast') hideToast();
   if (act === 'edit-item') { state.ui.editing = state.ui.editing === id ? null : id; render(); }
   if (act === 'scratch-prev') {
     state.ui.scratchDate = M.addDays(state.ui.scratchDate || M.todayIso(), -1);
