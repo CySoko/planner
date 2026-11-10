@@ -6,6 +6,7 @@ Spec: `docs/superpowers/specs/2026-11-02-sokogen-planner-design.md` · Plan: `do
 ## How Cy works
 - He previews with VS Code Live Server. Never launch a browser, take screenshots or start a server unless he asks. Make the change, say what changed, stop.
 - One change per request. Go straight to the mapped file and read only the section you need. If the target is unclear, ask; don't explore.
+- When a change is done and tests pass, offer to commit, then remind Cy to /clear before the next task.
 
 ## File map
 | To change | Styles (`css/app.css` section) | Markup / logic |
