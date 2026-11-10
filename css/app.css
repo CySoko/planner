@@ -89,7 +89,8 @@ textarea { font-size: 17px; resize: vertical; }
 .dayblock .num { font-family: 'Racing Sans One', sans-serif; font-synthesis: none; font-size: 22px; line-height: 1; }
 .dayblock.today { background: var(--date); border-color: var(--date); }
 .dayblock.today .wd, .dayblock.today .num { color: var(--on-date); }
-.wk { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 24px) / 4); gap: 8px; padding: 14px 12px 16px; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity; scroll-padding: 0 12px; overscroll-behavior-x: contain; scrollbar-width: thin; }
+.wk { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 24px) / 4); gap: 8px; padding: 14px 12px 16px; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity; scroll-padding: 0 12px; overscroll-behavior-x: contain; scrollbar-width: thin; -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); }
+.wk.at-end { -webkit-mask-image: none; mask-image: none; }
 .wk-col { display: flex; flex-direction: column; gap: 8px; min-width: 0; scroll-snap-align: start; }
 .wk-head { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line-strong); }
 .wk-head .wd { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: .16em; color: var(--date); }

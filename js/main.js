@@ -36,6 +36,7 @@ function render() {
   if (scratchActive && !route) {
     const el = document.activeElement;
     scratchSnap = { id: el.dataset.id, value: el.value, sel: el.selectionStart };
+    if (el.dataset.id === '__new') el.value = ''; // prevent focusout during innerHTML from scheduling scratchCreateFirst
     state.ui.scratchFocus = { id: el.dataset.id };
   }
 
@@ -43,6 +44,10 @@ function render() {
   if (['school', 'life', 'projects'].includes(route)) view.innerHTML = renderArea(route, state, today, nowIso);
   else if (route === 'inbox') view.innerHTML = renderInbox(state);
   else view.innerHTML = renderLanding(state, today, nowIso);
+
+  // Check if the week scroll is already at the end (no overflow → no fade).
+  const wkEl = view.querySelector('.wk');
+  if (wkEl) updateWkFade(wkEl);
 
   // Restore value and focus to the active scratch input.
   if (scratchSnap) {
@@ -158,12 +163,13 @@ function scratchEnter(el) {
   const date = state.ui.scratchDate || M.todayIso();
   if (id === '__new') {
     if (!text) return;
-    const row = { ...M.insertAfter(state.data.scratch, date, null, nowIso()), text };
+    el.value = ''; // prevent focusout during redrawScratch from scheduling scratchCreateFirst
+    const sorted = M.scratchForDate(state.data.scratch, date);
+    const lastId = sorted.length ? sorted[sorted.length - 1].id : null;
+    const row = { ...M.insertAfter(state.data.scratch, date, lastId, nowIso()), text };
     saveScratchRowQuiet(row);
-    const next = M.insertAfter(state.data.scratch, date, row.id, nowIso());
-    saveScratchRowQuiet(next);
     redrawScratch();
-    focusScratchBullet(next.id);
+    focusScratchBullet('__new');
   } else {
     flushScratchSave(id, text);
     const next = M.insertAfter(state.data.scratch, date, id, nowIso());
@@ -188,7 +194,9 @@ function scratchDeleteBullet(el) {
 
 function scratchCreateFirst(text) {
   const date = state.ui.scratchDate || M.todayIso();
-  const row = { ...M.insertAfter(state.data.scratch, date, null, nowIso()), text };
+  const sorted = M.scratchForDate(state.data.scratch, date);
+  const lastId = sorted.length ? sorted[sorted.length - 1].id : null;
+  const row = { ...M.insertAfter(state.data.scratch, date, lastId, nowIso()), text };
   saveScratchRowQuiet(row);
   redrawScratch();
 }
@@ -340,6 +348,8 @@ function commitAccept(r) {
   saveRows('Inbox', [r.inbox]);
 }
 
+function updateWkFade(el) { el.classList.toggle('at-end', el.scrollLeft + el.clientWidth >= el.scrollWidth - 4); }
+
 // ---------- events ----------
 document.addEventListener('click', (e) => {
   const el = e.target.closest('[data-act]');
@@ -441,6 +451,7 @@ document.addEventListener('focusout', (e) => {
   }
 });
 
+document.addEventListener('scroll', (e) => { if (e.target.classList && e.target.classList.contains('wk')) updateWkFade(e.target); }, { capture: true, passive: true });
 window.addEventListener('hashchange', () => { state.ui.adding = null; render(); window.scrollTo(0, 0); });
 window.addEventListener('online', () => { flush(); refresh(); });
 window.addEventListener('offline', () => { state.sync = 'offline'; renderStatus(); });
