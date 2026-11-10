@@ -1,5 +1,5 @@
 import { groupByDay, areaSummary, quoteForDate, isStalled, scratchForDate } from '../model.js';
-import { esc, AREAS, AREA_LABEL, groupName, groupsFor, shortDate, timeLabel, check } from './ui.js';
+import { esc, AREAS, AREA_LABEL, groupName, groupsFor, shortDate, check } from './ui.js';
 import { renderScratch } from './scratch.js';
 
 export function renderLanding(state, today, nowIso) {
@@ -12,10 +12,10 @@ export function renderLanding(state, today, nowIso) {
   const newInbox = inbox.filter(r => r.status === 'new').length;
   const stalled = groupsFor(context, 'projects').filter(g => isStalled(g.key, items, steps, nowIso)).length;
 
-  const dayHtml = days.map(d => `
-    <div class="day">
-      <div class="dayblock ${d.today ? 'today' : ''}"><span class="wd">${d.weekday}</span><span class="num">${d.num}</span></div>
-      <div class="day-items">${d.items.length ? d.items.map(it => row(it, context)).join('') : `<div class="empty-day">${d.today ? 'Nothing due today.' : '—'}</div>`}</div>
+  const colHtml = days.map(d => `
+    <div class="wk-col${d.today ? ' is-today' : ''}">
+      <div class="wk-head"><span class="wd">${d.weekday}</span><span class="num">${d.num}</span></div>
+      ${d.items.length ? `<div class="wk-items">${d.items.map(it => wkCard(it, context)).join('')}</div>` : `<div class="wk-empty">${d.today ? 'Nothing due today.' : '—'}</div>`}
     </div>`).join('');
 
   const doors = AREAS.map(a => {
@@ -45,10 +45,10 @@ export function renderLanding(state, today, nowIso) {
       <div class="scratch-slot">${scratchHtml}</div>
       <section class="panel" aria-labelledby="week-h">
         <div class="panel-head">
-          <div><h2 id="week-h">This week</h2><div class="muted">Due or happening <b style="color:var(--date)">${shortDate(days[0].date)} → ${shortDate(days[6].date)}</b></div></div>
+          <div><h2 id="week-h">This week</h2><div class="muted">Due or happening <b style="color:var(--date)">${shortDate(days[0].date)} → ${shortDate(days[6].date)}</b> <span class="mono wk-more">· scroll for more →</span></div></div>
           <span class="count">${weekItems.length}</span>
         </div>
-        <div class="week">${dayHtml}</div>
+        <div class="wk">${colHtml}</div>
       </section>
     </div>
 
@@ -68,13 +68,23 @@ export function renderLanding(state, today, nowIso) {
   </div>`;
 }
 
-function row(it, context) {
-  const t = timeLabel(it);
-  const box = it.occurrence ? '<span></span>' : check(it.status === 'done', 'toggle-item', it.id, it.title, it.area);
-  return `<div class="row area-${esc(it.area)}">
-    ${box}
-    <div><div class="row-title">${esc(it.title)}</div>
-    <div class="row-meta"><span class="tag">${esc(it.area)}</span> · ${esc(groupName(context, it.group))} · ${esc(it.occurrence ? 'weekly' : it.type)}</div></div>
-    ${t ? `<span class="time ${t.cls}">${esc(t.text)}</span>` : '<span></span>'}
+function wkLabel(it) {
+  if (it.overdue) return { text: 'OVERDUE', cls: 'overdue' };
+  if (it.type === 'deadline') return { text: it.time ? 'DUE ' + it.time : 'DUE', cls: 'due' };
+  if (it.type === 'event') return { text: it.time || 'ALL DAY', cls: '' };
+  return { text: it.time ? 'TO DO \u00b7 ' + it.time : 'TO DO', cls: 'do' };
+}
+
+function wkCard(it, context) {
+  const done = it.status === 'done';
+  const box = it.occurrence ? '<span></span>' : check(done, 'toggle-item', it.id, it.title, it.area);
+  const label = wkLabel(it);
+  const shortGroup = groupName(context, it.group).split(' \u00b7 ')[0];
+  return `<div class="wk-card area-${esc(it.area)}${done ? ' done' : ''}">
+    <div class="wk-row">${box}<div class="wk-body">
+      <div class="wk-title">${esc(it.title)}</div>
+      <div class="wk-meta"><span class="tag">${esc(it.area)}</span> \u00b7 ${esc(shortGroup)}</div>
+      <span class="time ${label.cls}">${esc(label.text)}</span>
+    </div></div>
   </div>`;
 }
