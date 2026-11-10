@@ -125,6 +125,16 @@ export function acceptSuggestion(inboxRow, suggestionItems, now) {
 
 export function dismissCapture(inboxRow) { return { ...inboxRow, status: 'dismissed' }; }
 
+export function buildSyntheticInboxRow(text, guess, now) {
+  return {
+    id: newId('in'), text, source: 'page', capturedAt: now, status: 'new', suggestion: '',
+    guessArea: guess.area || '', guessGroup: guess.group || '', guessDate: guess.date || '',
+    guessType: guess.type || 'deadline', guessTitle: guess.title || '', guessTime: guess.time || '',
+    guessParent: guess.parentId || '',
+    confidence: JSON.stringify(guess.confidence || {}), alternatives: JSON.stringify(guess.alternatives || {})
+  };
+}
+
 // ---- Inline edit ----
 export function applyItemEdit(item, changes, nowIso) {
   const out = { ...item, updated: nowIso };

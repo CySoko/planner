@@ -5,7 +5,7 @@ export function renderScratch(rows, date, today) {
   const isToday = date === today;
   const isPast = date < today;
   const dateLabel = weekdayOf(date) + ' ' + date.slice(5, 7) + '.' + date.slice(8);
-  const bullets = rows.length ? rows.map(r => bulletHtml(r, isPast)).join('') : emptyBullet();
+  const bullets = rows.map(r => bulletHtml(r, isPast)).join('') + (!isPast ? emptyBullet() : '');
 
   return `<section class="panel scratch-panel" data-date="${esc(date)}">
     <div class="scratch-head">

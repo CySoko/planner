@@ -94,7 +94,7 @@ test('addDays crosses month ends', () => {
   assert.equal(addDays('2026-11-30', 1), '2026-12-01');
 });
 
-import { acceptCapture, acceptSuggestion, dismissCapture } from '../js/model.js';
+import { acceptCapture, acceptSuggestion, dismissCapture, buildSyntheticInboxRow } from '../js/model.js';
 
 const NOW = '2026-11-02T20:15:00-07:00';
 const inbox = {
@@ -148,6 +148,32 @@ test('acceptSuggestion: a Claude suggestion with 3 items creates 3 Items', () =>
 
 test('dismissCapture marks the inbox row dismissed and files nothing', () => {
   assert.equal(dismissCapture(inbox).status, 'dismissed');
+});
+
+test('buildSyntheticInboxRow maps parse guess fields and generates an id', () => {
+  const guess = { title: 'Neuro reading', area: 'school', group: 'neuro', date: '2026-11-12', time: '14:00', type: 'deadline', parentId: '', confidence: { where: 'sure', when: 'sure', type: 'sure' }, alternatives: {} };
+  const row = buildSyntheticInboxRow('neuro reading due thursday', guess, NOW);
+  assert.ok(row.id.startsWith('in_'));
+  assert.equal(row.text, 'neuro reading due thursday');
+  assert.equal(row.source, 'page');
+  assert.equal(row.status, 'new');
+  assert.equal(row.guessArea, 'school');
+  assert.equal(row.guessGroup, 'neuro');
+  assert.equal(row.guessDate, '2026-11-12');
+  assert.equal(row.guessTitle, 'Neuro reading');
+  assert.equal(row.guessTime, '14:00');
+  assert.equal(row.guessType, 'deadline');
+  assert.equal(row.capturedAt, NOW);
+});
+
+test('buildSyntheticInboxRow handles null guess fields gracefully', () => {
+  const guess = { title: 'Buy tape', area: null, group: null, date: null, time: null, type: 'deadline', parentId: null, confidence: {}, alternatives: {} };
+  const row = buildSyntheticInboxRow('buy tape', guess, NOW);
+  assert.equal(row.guessArea, '');
+  assert.equal(row.guessGroup, '');
+  assert.equal(row.guessDate, '');
+  assert.equal(row.guessTime, '');
+  assert.equal(row.guessParent, '');
 });
 
 import { scratchForDate, insertAfter, carryToToday } from '../js/model.js';

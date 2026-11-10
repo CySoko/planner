@@ -5,7 +5,7 @@ import { renderLanding } from './views/landing.js';
 import { renderArea } from './views/area.js';
 import { renderInbox } from './views/inbox.js';
 import { renderScratch } from './views/scratch.js';
-import { esc } from './views/ui.js';
+import { esc, allGroups, groupName, AREA_LABEL } from './views/ui.js';
 
 const TAB_KEY = { Items: 'items', Steps: 'steps', Inbox: 'inbox', Context: 'context', Quotes: 'quotes', Scratch: 'scratch' };
 const KEY_OF = { Context: r => r.kind + '|' + r.key, Quotes: r => r.text };
@@ -247,7 +247,12 @@ async function flush() {
 // ---------- actions ----------
 const nowIso = () => api.localIso();
 
+let capLastText = '';
+let capOverrides = {};
+let capGuess = null;
+
 function openPalette() {
+  capLastText = ''; capOverrides = {}; capGuess = null;
   $('#palette').hidden = false;
   const ta = $('#capture'); ta.value = ''; previewCapture(); ta.focus();
 }
@@ -255,15 +260,85 @@ function closePalette() { $('#palette').hidden = true; $('#capture-error').hidde
 
 function previewCapture() {
   const text = $('#capture').value.trim();
-  const chips = $('#capture-chips');
-  if (!text) { chips.innerHTML = '<span class="chip none">type or dictate</span>'; return; }
-  if (text.length > 2000) { chips.innerHTML = '<span class="chip none">long paste: Claude sorts it tonight</span>'; return; }
+  const fields = $('#cap-fields');
+
+  if (!text) {
+    fields.innerHTML = '<div class="cap-hint mono">type or dictate</div>';
+    capGuess = null;
+    return;
+  }
+
+  const lines = text.split('\n').length;
+  if (text.length > 2000 || lines > 3) {
+    fields.innerHTML = `<div class="cap-foot"><span class="cap-hint">Long paste \u2014 Claude sorts it tonight.</span><div class="row-end"><button class="btn" data-act="close-palette">esc</button><button class="btn primary" data-act="send-capture">send to inbox \u21b5</button></div></div>`;
+    capGuess = null;
+    return;
+  }
+
+  if (text !== capLastText) capOverrides = {};
+  capLastText = text;
+
   const g = safeParse(text, nowIso());
-  if (!g) { chips.innerHTML = ''; return; }
-  const c = (label, value, conf) => `<span class="chip ${conf}">${label}: ${esc(value || '—')}</span>`;
-  chips.innerHTML = c('where', g.area ? g.area + '/' + g.group : 'inbox', g.confidence.where) +
-    c('when', g.date ? g.date + (g.time ? ' ' + g.time : '') : 'no date', g.confidence.when) +
-    c('type', g.type, g.confidence.type);
+  if (!g) { fields.innerHTML = ''; capGuess = null; return; }
+  capGuess = g;
+
+  const groups = allGroups(state.data.context);
+  const whereVal = capOverrides.where !== undefined ? capOverrides.where : (g.area ? g.area + '/' + g.group : '');
+  const titleVal = capOverrides.title !== undefined ? capOverrides.title : (g.title || '');
+  const dateVal = capOverrides.date !== undefined ? capOverrides.date : (g.date || '');
+  const timeVal = capOverrides.time !== undefined ? capOverrides.time : (g.time || '');
+  const typeVal = capOverrides.type || g.type || 'deadline';
+
+  const whereOpts = (whereVal ? '' : '<option value="">\u2014</option>') +
+    groups.map(gr => `<option value="${esc(gr.area + '/' + gr.key)}" ${gr.area + '/' + gr.key === whereVal ? 'selected' : ''}>${esc(AREA_LABEL[gr.area])} \u00b7 ${esc(gr.name)}</option>`).join('');
+  const typeOpts = ['deadline', 'event', 'do-date'].map(t => `<option ${t === typeVal ? 'selected' : ''}>${t}</option>`).join('');
+
+  const [destArea, destGroup] = (whereVal || '').split('/');
+  const destName = destGroup ? groupName(state.data.context, destGroup) : '';
+  const destLabel = destArea ? `add to ${destName}` : 'choose where';
+
+  fields.innerHTML = `
+    <div class="cap-grid">
+      <label class="cap-f">Title<input type="text" name="cap-title" value="${esc(titleVal)}"></label>
+      <label class="cap-f">Where<select name="cap-where">${whereOpts}</select></label>
+      <label class="cap-f">Date<input type="date" name="cap-date" value="${esc(dateVal)}"></label>
+      <label class="cap-f">Time<input type="time" name="cap-time" value="${esc(timeVal)}"></label>
+      <label class="cap-f">Type<select name="cap-type">${typeOpts}</select></label>
+    </div>
+    <div class="cap-foot">
+      <button class="btn" data-act="close-palette">esc</button>
+      <button class="btn" data-act="send-capture">inbox instead</button>
+      <button class="btn primary" data-act="file-capture" ${!whereVal ? 'disabled' : ''}>${esc(destLabel)} \u21b5</button>
+    </div>`;
+}
+
+function fileCapture() {
+  const text = $('#capture').value.trim();
+  const err = $('#capture-error');
+  if (!text || !capGuess) { err.textContent = 'Type or dictate something first.'; err.hidden = false; return; }
+
+  const grid = document.querySelector('.cap-grid');
+  if (!grid) return;
+  const where = grid.querySelector('[name="cap-where"]').value;
+  if (!where) { err.textContent = 'Choose where this goes.'; err.hidden = false; return; }
+
+  const title = grid.querySelector('[name="cap-title"]').value.trim();
+  const date = grid.querySelector('[name="cap-date"]').value;
+  const time = grid.querySelector('[name="cap-time"]').value;
+  const type = grid.querySelector('[name="cap-type"]').value;
+  const [area, group] = where.split('/');
+  const now = nowIso();
+
+  const synth = M.buildSyntheticInboxRow(text, capGuess, now);
+  const chosen = { area, group, title: title || capGuess.title, date, time, type, parentId: capGuess.parentId || '', steps: [] };
+  const r = M.acceptCapture(synth, chosen, now);
+
+  if (r.items.length) saveRows('Items', r.items);
+  if (r.steps.length) saveRows('Steps', r.steps);
+  if (r.log.length) saveRows('Log', r.log);
+
+  closePalette();
+  render();
 }
 
 function sendCapture() {
@@ -376,6 +451,7 @@ document.addEventListener('click', (e) => {
   if (act === 'open-palette') openPalette();
   if (act === 'close-palette') closePalette();
   if (act === 'send-capture') sendCapture();
+  if (act === 'file-capture') fileCapture();
   if (act === 'toggle-item') toggleItem(id);
   if (act === 'toggle-step') toggleStep(id);
   if (act === 'add-step') addStep(id);
@@ -432,7 +508,8 @@ document.addEventListener('keydown', (e) => {
   if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openPalette(); }
   if (e.key === 'Escape' && state.ui.editing) { state.ui.editing = null; render(); return; }
   if (e.key === 'Escape' && !$('#palette').hidden) closePalette();
-  if (e.target.id === 'capture' && e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendCapture(); }
+  if (e.target.id === 'capture' && e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); capGuess ? fileCapture() : sendCapture(); }
+  if (e.target.closest && e.target.closest('.cap-grid') && e.key === 'Enter') { e.preventDefault(); fileCapture(); return; }
   if (e.target.closest && e.target.closest('[data-form="edit-item"]') && e.key === 'Enter') { e.preventDefault(); saveItemEdit(e.target.closest('[data-form="edit-item"]')); return; }
   if (e.target.dataset && e.target.dataset.stepInput && e.key === 'Enter') { e.preventDefault(); addStep(e.target.dataset.stepInput); }
   if (e.target.dataset && e.target.dataset.scratchInput !== undefined) {
@@ -442,9 +519,28 @@ document.addEventListener('keydown', (e) => {
 });
 document.addEventListener('input', (e) => {
   if (e.target.id === 'capture') previewCapture();
+  if (e.target.name && e.target.name.startsWith('cap-')) {
+    const field = e.target.name.slice(4);
+    capOverrides[field] = e.target.value;
+  }
   if (e.target.dataset && e.target.dataset.scratchInput !== undefined) {
     const id = e.target.dataset.id;
     if (id !== '__new') scheduleScratchSave(id, e.target.value.trim());
+  }
+});
+document.addEventListener('change', (e) => {
+  if (e.target.name && e.target.name.startsWith('cap-')) {
+    const field = e.target.name.slice(4);
+    capOverrides[field] = e.target.value;
+    if (field === 'where') {
+      const btn = document.querySelector('[data-act="file-capture"]');
+      if (btn) {
+        const [a, g] = (e.target.value || '').split('/');
+        const name = g ? groupName(state.data.context, g) : '';
+        btn.textContent = a ? `add to ${name} \u21b5` : 'choose where \u21b5';
+        btn.disabled = !a;
+      }
+    }
   }
 });
 document.addEventListener('focusin', (e) => {

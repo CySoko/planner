@@ -54,10 +54,11 @@ textarea, input[type=text], input[type=date], input[type=time], select { width: 
 textarea { font-size: 17px; resize: vertical; }
 .row-end { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip { font-family: 'JetBrains Mono', monospace; font-size: 12px; padding: 5px 10px; border-radius: 8px; border: 1px solid var(--line-strong); color: var(--muted); }
-.chip.sure { color: var(--date); border-color: var(--date); }
-.chip.unsure { color: var(--unsure); border-color: var(--unsure); background: var(--unsure-bg); }
-.chip.none { border-style: dashed; }
+.cap-grid { display: grid; grid-template-columns: 2fr 1.6fr 1.1fr .9fr 1fr; gap: 10px; }
+.cap-f { display: flex; flex-direction: column; gap: 5px; font-size: 12px; font-weight: 700; min-width: 0; }
+.cap-f input, .cap-f select { font-size: 14px; font-weight: 400; }
+.cap-hint { font-size: 13px; color: var(--muted); padding: 6px 0; }
+.cap-foot { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; margin-top: 4px; }
 .error { color: var(--school); margin: 0; font-size: 13px; }
 
 /* always remember */
@@ -242,6 +243,8 @@ textarea { font-size: 17px; resize: vertical; }
   .card-head { padding: 14px; gap: 12px; }
   .top-right { justify-content: flex-start; }
   .today { text-align: left; }
+  .cap-grid { grid-template-columns: 1fr 1fr; }
+  .cap-grid .cap-f:first-child { grid-column: 1 / -1; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }

@@ -30,7 +30,7 @@ Spec: `docs/superpowers/specs/2026-11-02-sokogen-planner-design.md` · Plan: `do
 ## Always
 - `npm test` before every commit. Logic changes get a test; pure functions go in `js/model.js` or `apps-script/*.js`.
 - Sheet columns: never reorder or delete. Add new ones only at the END of a list in `Schema.js`; Cy then re-runs `setupSheet`.
-- Nothing goes into Items without Cy confirming it in Inbox.
+- Items are filed via the "+ add task" box (direct) or via Inbox review. Siri captures always go through Inbox.
 - Visual system per the spec: colors only in `tokens.css`; Racing Sans One headings (`font-synthesis: none`), Inter body, JetBrains Mono details; light mode default; all motion stops under `prefers-reduced-motion`.
 
 ## Apps Script (clasp)
