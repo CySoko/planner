@@ -61,9 +61,9 @@ textarea { font-size: 17px; resize: vertical; }
 .error { color: var(--school); margin: 0; font-size: 13px; }
 
 /* always remember */
-.remember { padding: 22px 26px; display: flex; flex-wrap: wrap; gap: 26px; align-items: center; }
-.orb-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 140px; }
-.orb { position: relative; width: 136px; height: 136px; }
+.remember { padding: 13px 16px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+.orb-wrap { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 84px; }
+.orb { position: relative; width: 136px; height: 136px; zoom: .6; }
 .orb > span { position: absolute; display: block; }
 .orb .core { left: 33px; top: 33px; width: 70px; height: 70px; border-radius: 50%; background: var(--orb); box-shadow: inset -10px -12px 24px rgba(90,0,30,.5), inset 8px 8px 18px rgba(255,190,200,.45), 0 0 40px var(--glow); animation: breathe 16s ease-in-out infinite; }
 .orb .ring { left: 22px; top: 22px; width: 92px; height: 92px; border-radius: 50%; border: 1px solid var(--line-strong); }
@@ -74,8 +74,8 @@ textarea { font-size: 17px; resize: vertical; }
 .orb .t3 { left: 0; top: 67px; width: 14px; height: 2px; animation-delay: 12s; }
 .orb .orbit { left: 22px; top: 22px; width: 92px; height: 92px; animation: spin 16s linear infinite; }
 .orb .dot { position: absolute; left: 41px; top: -5px; width: 10px; height: 10px; border-radius: 50%; background: var(--text); box-shadow: 0 0 14px var(--glow); }
-.breathe-label { font-size: 12px; letter-spacing: .24em; color: var(--tick-on); }
-.quote { flex: 1 1 320px; min-width: 0; font-size: 24px; line-height: 1.22; font-weight: 600; letter-spacing: -.01em; font-style: italic; }
+.breathe-label { font-size: 10px; letter-spacing: .2em; color: var(--tick-on); }
+.quote { flex: 1 1 200px; min-width: 0; font-size: 18px; line-height: 1.28; font-weight: 600; letter-spacing: -.01em; font-style: italic; padding-left: 48px; text-wrap: balance; }
 .quote q { quotes: '\201C' '\201D'; }
 .quote q::before, .quote q::after { color: var(--school); }
 @keyframes breathe { 0% { transform: scale(.82); } 25% { transform: scale(1); } 50% { transform: scale(1); } 75% { transform: scale(.82); } 100% { transform: scale(.82); } }
@@ -208,7 +208,7 @@ textarea { font-size: 17px; resize: vertical; }
   .app { padding-left: 16px; padding-right: 16px; }
   .status { margin-left: -16px; margin-right: -16px; padding-left: 16px; padding-right: 16px; }
   .wordmark { font-size: 26px; }
-  .quote { font-size: 24px; }
+  .quote { font-size: 17px; padding-left: 0; }
   .page-title { font-size: 46px; }
   .card-inner { padding-left: 20px; }
   .day { grid-template-columns: 58px minmax(0, 1fr); padding-left: 12px; padding-right: 12px; }
