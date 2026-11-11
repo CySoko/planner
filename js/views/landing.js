@@ -42,7 +42,6 @@ export function renderLanding(state, today, nowIso) {
         </div>
         <div class="quote">${q ? esc(q.text) : '<span class="muted">Add quotes in the Quotes tab.</span>'}</div>
       </section>
-      <div class="scratch-slot">${scratchHtml}</div>
       <section class="panel" aria-labelledby="week-h">
         <div class="panel-head">
           <div><h2 id="week-h">This week</h2><div class="muted">Due or happening <b style="color:var(--date)">${shortDate(days[0].date)} → ${shortDate(days[6].date)}</b> <span class="mono wk-more">· scroll for more →</span></div></div>

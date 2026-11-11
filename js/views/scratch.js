@@ -10,7 +10,7 @@ export function renderScratch(rows, date, today) {
   return `<section class="panel scratch-panel" data-date="${esc(date)}">
     <div class="scratch-head">
       <div class="scratch-title">
-        <span class="h2 scratch-h">Today</span>
+        <span class="h2 scratch-h">Quick Notes</span>
         <span class="mono scratch-date">${esc(dateLabel)}</span>
       </div>
       <div class="scratch-nav-btns">
