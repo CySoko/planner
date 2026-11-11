@@ -98,7 +98,7 @@ function wkCard(it, context, editingId) {
       <div class="wk-title">${esc(it.title)}</div>
       <div class="wk-meta"><span class="tag">${esc(it.area)}</span> \u00b7 ${esc(shortGroup)}</div>
     </div></div>
-    <div class="wk-foot">${it.occurrence ? '' : `<button class="wk-star${it.starred ? ' on' : ''}" data-act="toggle-star" data-id="${esc(it.id)}" aria-pressed="${!!it.starred}" aria-label="Star ${esc(it.title)}"><svg width="24" height="24" viewBox="0 0 24 24" fill="${it.starred ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>`}<span class="time ${label.cls}">${esc(label.text)}</span></div>
+    <div class="wk-foot">${it.occurrence ? '' : `<button class="wk-star${it.starred ? ' on' : ''}" data-act="toggle-star" data-id="${esc(it.id)}" aria-pressed="${!!it.starred}" aria-label="Star ${esc(it.title)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="${it.starred ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>`}<span class="time ${label.cls}">${esc(label.text)}</span></div>
     ${pencil}${editForm}
   </div>`;
 }
