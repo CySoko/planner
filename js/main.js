@@ -327,6 +327,7 @@ let capPreset = '';
 let toastTimer = null;
 let toastUndo = null;
 let scratchLastText = { id: '', text: '' };
+let scratchDeleting = false;
 
 function openPalette(presetArea) {
   const pal = $('#palette');
@@ -697,9 +698,7 @@ document.addEventListener('input', (e) => {
   }
   if (e.target.dataset && e.target.dataset.scratchInput !== undefined) {
     const id = e.target.dataset.id;
-    const t = e.target.value.trim();
-    if (t) scratchLastText = { id, text: t };
-    if (id !== '__new') scheduleScratchSave(id, t);
+    if (id !== '__new') scheduleScratchSave(id, e.target.value.trim());
   }
 });
 document.addEventListener('change', (e) => {
@@ -717,9 +716,23 @@ document.addEventListener('change', (e) => {
     }
   }
 });
+document.addEventListener('beforeinput', (e) => {
+  if (e.target.dataset && e.target.dataset.scratchInput !== undefined) {
+    if (e.inputType && e.inputType.startsWith('delete')) {
+      if (!scratchDeleting) {
+        const t = e.target.value.trim();
+        if (t) scratchLastText = { id: e.target.dataset.id, text: t };
+        scratchDeleting = true;
+      }
+    } else {
+      scratchDeleting = false;
+    }
+  }
+});
 document.addEventListener('focusin', (e) => {
   if (e.target.dataset && e.target.dataset.scratchInput !== undefined) {
     state.ui.scratchFocus = { id: e.target.dataset.id };
+    scratchDeleting = false;
     const t = e.target.value.trim();
     if (t) scratchLastText = { id: e.target.dataset.id, text: t };
   }
