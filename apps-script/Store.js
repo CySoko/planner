@@ -1,7 +1,7 @@
 // Store.gs — converts Sheet rows to objects and back, and merges edits.
 // Pure functions only: Code.gs does the actual reading and writing.
 
-const BOOLEAN_FIELDS_ = ['done', 'active', 'deleted'];
+const BOOLEAN_FIELDS_ = ['done', 'active', 'deleted', 'starred'];
 
 function headersFor_(tab) {
   const H = (typeof module !== 'undefined') ? require('./Schema.js').HEADERS : HEADERS;

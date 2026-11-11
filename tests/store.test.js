@@ -5,14 +5,14 @@ const { HEADERS } = require('../apps-script/Schema.js');
 
 test('round-trips every tab', () => {
   for (const tab of Object.keys(HEADERS)) {
-    const obj = Object.fromEntries(HEADERS[tab].map((c, i) => [c, c === 'done' || c === 'active' || c === 'deleted' ? true : `${tab}-${c}-${i}`]));
+    const obj = Object.fromEntries(HEADERS[tab].map((c, i) => [c, c === 'done' || c === 'active' || c === 'deleted' || c === 'starred' ? true : `${tab}-${c}-${i}`]));
     const back = toObjects(tab, [HEADERS[tab], toRow(tab, obj)])[0];
     assert.deepEqual(back, obj, tab);
   }
 });
 
 test('toRow fills missing fields with empty strings and drops unknown ones', () => {
-  assert.deepEqual(toRow('Steps', { id: 's1', text: 'Build slides', bogus: 'x' }), ['s1', '', 'Build slides', '', '', '']);
+  assert.deepEqual(toRow('Steps', { id: 's1', text: 'Build slides', bogus: 'x' }), ['s1', '', 'Build slides', '', '', '', '']);
 });
 
 test('toObjects skips the header row and blank rows, turns TRUE/FALSE into booleans for done and active', () => {
@@ -71,4 +71,15 @@ test('custom key: Context rows merge by kind + key and incoming wins when there 
   const r = mergeRows([{ kind: 'keyword', key: 'neuro', value: 'school/neuro' }], [{ kind: 'keyword', key: 'neuro', value: 'school/sound' }, { kind: 'keyword', key: 'nero', value: 'school/neuro' }], key);
   assert.deepEqual(r.rows.map(x => x.value), ['school/sound', 'school/neuro']);
   assert.deepEqual(r.changed, ['keyword|neuro', 'keyword|nero']);
+});
+
+test('new end-of-list columns: starred is a boolean, old rows without them read as unstarred', () => {
+  const old = toObjects('Items', [HEADERS.Items, ['i1', 'school', 'neuro', 'T', '', '', 'deadline', '', 'open', '', '', '']]);
+  assert.equal(old[0].starred, false);
+  assert.equal(old[0].order, '');
+  const row = toRow('Items', { id: 'i2', starred: true, order: 3 });
+  assert.equal(row[HEADERS.Items.indexOf('starred')], true);
+  assert.equal(row[HEADERS.Items.indexOf('order')], 3);
+  const step = toObjects('Steps', [HEADERS.Steps, ['s1', 'i1', 'Print paperwork', 'FALSE', 1, 'u', '2026-11-11']]);
+  assert.equal(step[0].date, '2026-11-11');
 });

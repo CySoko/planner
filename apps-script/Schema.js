@@ -2,8 +2,9 @@
 // RULE: never reorder or delete a column. New columns only go at the END of a list.
 
 const HEADERS = {
-  Items: ['id', 'area', 'group', 'title', 'date', 'time', 'type', 'repeat', 'status', 'notes', 'created', 'updated'],
-  Steps: ['id', 'itemId', 'text', 'done', 'order', 'updated'],
+  Items: ['id', 'area', 'group', 'title', 'date', 'time', 'type', 'repeat', 'status', 'notes', 'created', 'updated',
+          'starred', 'order'],
+  Steps: ['id', 'itemId', 'text', 'done', 'order', 'updated', 'date'],
   Inbox: ['id', 'text', 'source', 'capturedAt', 'guessArea', 'guessGroup', 'guessDate', 'guessType', 'confidence', 'suggestion', 'status',
           'guessTitle', 'guessTime', 'guessParent', 'alternatives'],
   Context: ['kind', 'key', 'value', 'active'],
@@ -21,6 +22,7 @@ const DEFAULT_CONTEXT = [
   ['class', 'sound', 'Sound · ATLAS 3200', true],
   ['class', 'genai', 'Generative AI · ATLS 4519', true],
   ['class', 'nvc', 'New Venture Creation · ESBM 4830', true],
+  ['class', 'geog', 'Geography · GEOG 1001', true],
   ['life', 'housing', 'Housing', true],
   ['life', 'work', 'Mountain Sun', true],
   ['life', 'abroad', 'Study abroad', true],
@@ -41,6 +43,9 @@ const DEFAULT_CONTEXT = [
   ['keyword', 'goldn', 'school/nvc', true],
   ['keyword', 'golden', 'school/nvc', true],
   ['keyword', 'venture', 'school/nvc', true],
+  ['keyword', 'geog', 'school/geog', true],
+  ['keyword', 'geography', 'school/geog', true],
+  ['keyword', '1001', 'school/geog', true],
   ['keyword', 'lease', 'life/housing', true],
   ['keyword', 'rent', 'life/housing', true],
   ['keyword', 'move out', 'life/housing', true],

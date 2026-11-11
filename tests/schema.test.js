@@ -4,8 +4,9 @@ const { HEADERS, DEFAULT_CONTEXT, DEFAULT_QUOTES } = require('../apps-script/Sch
 const { setupSheet } = require('../apps-script/Setup.js');
 
 test('headers match the spec exactly', () => {
-  assert.deepEqual(HEADERS.Items, ['id', 'area', 'group', 'title', 'date', 'time', 'type', 'repeat', 'status', 'notes', 'created', 'updated']);
-  assert.deepEqual(HEADERS.Steps, ['id', 'itemId', 'text', 'done', 'order', 'updated']);
+  assert.deepEqual(HEADERS.Items, ['id', 'area', 'group', 'title', 'date', 'time', 'type', 'repeat', 'status', 'notes', 'created', 'updated',
+    'starred', 'order']);
+  assert.deepEqual(HEADERS.Steps, ['id', 'itemId', 'text', 'done', 'order', 'updated', 'date']);
   assert.deepEqual(HEADERS.Inbox, ['id', 'text', 'source', 'capturedAt', 'guessArea', 'guessGroup', 'guessDate', 'guessType', 'confidence', 'suggestion', 'status',
     'guessTitle', 'guessTime', 'guessParent', 'alternatives']);
   assert.deepEqual(HEADERS.Context, ['kind', 'key', 'value', 'active']);
