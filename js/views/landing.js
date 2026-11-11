@@ -97,8 +97,8 @@ function wkCard(it, context, editingId) {
     <div class="wk-row">${box}<div class="wk-body">
       <div class="wk-title">${esc(it.title)}</div>
       <div class="wk-meta"><span class="tag">${esc(it.area)}</span> \u00b7 ${esc(shortGroup)}</div>
-      <span class="time ${label.cls}">${esc(label.text)}</span>
     </div></div>
+    <span class="time ${label.cls}">${esc(label.text)}</span>
     ${pencil}${editForm}
   </div>`;
 }
