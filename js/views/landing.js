@@ -89,27 +89,31 @@ function wkLabel(it) {
 function wkCard(it, context, editingId) {
   const done = it.status === 'done';
   const editing = editingId === it.id;
-  const box = it.occurrence ? '<span></span>' : check(done, 'toggle-item', it.id, it.title, it.area);
   const label = wkLabel(it);
   const shortGroup = groupName(context, it.group).split(' \u00b7 ')[0];
   const pencil = `<button class="wk-edit" data-act="edit-item" data-id="${esc(it.id)}" aria-label="Edit ${esc(it.title)}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>`;
   const groups = allGroups(context);
-  const editForm = !editing ? '' : `<form class="wk-pop" data-form="edit-item" data-id="${esc(it.id)}">
-      <div class="wk-pop-head"><span class="h2">Edit</span><span class="mono muted">${esc(it.area)}</span></div>
-      <label class="wk-f">Title<input type="text" name="title" value="${esc(it.title)}" required></label>
-      <label class="wk-f">Date<input type="date" name="date" value="${esc(it.date || '')}" ${it.repeat === 'weekly' ? 'disabled' : ''}></label>
-      ${it.repeat === 'weekly' ? '<p class="wk-note">Repeats weekly. Changes apply to every week.</p>' : ''}
-      <label class="wk-f">Time<input type="time" name="time" value="${esc(it.time || '')}"></label>
-      <label class="wk-f">Type<select name="type">${['deadline', 'event', 'do-date'].map(t => `<option ${t === it.type ? 'selected' : ''}>${t}</option>`).join('')}</select></label>
-      <label class="wk-f">Where<select name="where">${groups.map(g => `<option value="${esc(g.area + '/' + g.key)}" ${g.area === it.area && g.key === it.group ? 'selected' : ''}>${esc(AREA_LABEL[g.area])} \u00b7 ${esc(g.name)}</option>`).join('')}</select></label>
-      <div class="row-end"><button type="button" class="btn small" data-act="edit-item" data-id="${esc(it.id)}">esc</button><button type="submit" class="btn small primary">save \u21b5</button></div>
-    </form>`;
-  return `<div class="wk-card area-${esc(it.area)}${done ? ' done' : ''}${editing ? ' editing' : ''}">
+  if (editing) {
+    return `<div class="wk-card area-${esc(it.area)}${done ? ' done' : ''} editing">
+      <form class="wk-pop" data-form="edit-item" data-id="${esc(it.id)}">
+        <input class="wk-title-input" type="text" name="title" value="${esc(it.title)}" required>
+        <div class="wk-more" hidden>
+          <label class="wk-f">Date<input type="date" name="date" value="${esc(it.date || '')}" ${it.repeat === 'weekly' ? 'disabled' : ''}></label>
+          ${it.repeat === 'weekly' ? '<p class="wk-note">Repeats weekly. Changes apply to every week.</p>' : ''}
+          <label class="wk-f">Time<input type="time" name="time" value="${esc(it.time || '')}"></label>
+          <label class="wk-f">Type<select name="type">${['deadline', 'event', 'do-date'].map(t => `<option ${t === it.type ? 'selected' : ''}>${t}</option>`).join('')}</select></label>
+          <label class="wk-f">Where<select name="where">${groups.map(g => `<option value="${esc(g.area + '/' + g.key)}" ${g.area === it.area && g.key === it.group ? 'selected' : ''}>${esc(AREA_LABEL[g.area])} \u00b7 ${esc(g.name)}</option>`).join('')}</select></label>
+        </div>
+        <div class="wk-edit-foot"><button type="button" class="btn small" data-act="toggle-edit-more">more \u25b8</button><div class="row-end"><button type="button" class="btn small" data-act="edit-item" data-id="${esc(it.id)}">esc</button><button type="submit" class="btn small primary">save \u21b5</button></div></div>
+      </form>
+    </div>`;
+  }
+  const box = it.occurrence ? '<span></span>' : check(done, 'toggle-item', it.id, it.title, it.area);
+  return `<div class="wk-card area-${esc(it.area)}${done ? ' done' : ''}">
     <div class="wk-row">${box}<div class="wk-body">
       <div class="wk-title">${esc(it.title)}</div>
       <div class="wk-meta"><span class="tag">${esc(it.area)}</span> \u00b7 ${esc(shortGroup)}</div>
     </div></div>
-    <div class="wk-foot">${it.occurrence ? '' : `<button class="wk-star${it.starred ? ' on' : ''}" data-act="toggle-star" data-id="${esc(it.id)}" aria-pressed="${!!it.starred}" aria-label="Star ${esc(it.title)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="${it.starred ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>`}<span class="time ${label.cls}">${esc(label.text)}</span></div>
-    ${pencil}${editForm}
+    <div class="wk-foot"><span class="wk-tools">${it.occurrence ? '' : `<button class="wk-star${it.starred ? ' on' : ''}" data-act="toggle-star" data-id="${esc(it.id)}" aria-pressed="${!!it.starred}" aria-label="Star ${esc(it.title)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="${it.starred ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>`}${pencil}</span><span class="time ${label.cls}">${esc(label.text)}</span></div>
   </div>`;
 }

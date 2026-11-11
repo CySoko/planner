@@ -106,7 +106,7 @@ textarea { font-size: 17px; resize: vertical; }
 .wk-items { display: flex; flex-direction: column; gap: 8px; }
 .wk-card { position: relative; display: flex; flex-direction: column; gap: 6px; padding: 10px; border-radius: 12px; background: var(--hover); border: 1px solid var(--line); transition: border-color .3s, transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s; }
 .wk-card:hover, .wk-card:focus-within { border-color: var(--area); transform: translateY(-2px); box-shadow: 0 18px 40px -26px var(--area); }
-.wk-row { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 8px; align-items: start; padding-right: 22px; }
+.wk-row { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 8px; align-items: start; }
 .wk-body { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
 .wk-card .chk { position: relative; width: 16px; height: 16px; border-radius: 4px; font-size: 10px; }
 .wk-card .chk::after { content: ''; position: absolute; inset: -10px; }
@@ -124,14 +124,17 @@ textarea { font-size: 17px; resize: vertical; }
 .wk-add:hover, .wk-add:focus-visible { border-color: var(--line-strong); color: var(--text); }
 .wk-more { font-size: 11px; color: var(--muted); font-weight: 400; }
 .wk-card.editing { border-color: var(--area); z-index: 5; transform: none; }
-.wk-edit { position: absolute; top: 6px; right: 6px; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--panel-solid); color: var(--text); cursor: pointer; opacity: 0; transition: opacity .25s, border-color .25s; }
-.wk-card:hover .wk-edit, .wk-card:focus-within .wk-edit, .wk-card.editing .wk-edit { opacity: 1; }
-.wk-edit:hover { border-color: var(--area); color: var(--area); }
+.wk-tools { display: inline-flex; gap: 6px; align-items: center; }
+.wk-edit { width: 16px; height: 16px; border: 0; background: none; color: var(--muted); cursor: pointer; padding: 0; opacity: 0; transition: opacity .25s; display: inline-flex; align-items: center; justify-content: center; }
+.wk-card:hover .wk-edit, .wk-card:focus-within .wk-edit { opacity: 1; }
+.wk-edit:hover { color: var(--area); }
 @media (hover: none) { .wk-edit { opacity: .75; } .wk-star:not(.on) { opacity: .75; } }
+.wk-title-input { font-size: 14px; font-weight: 600; width: 100%; }
+.wk-more { display: flex; flex-direction: column; gap: 9px; }
+.wk-more[hidden] { display: none; }
+.wk-edit-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .card-star { color: var(--btn); margin-right: 6px; }
-.wk-pop { display: flex; flex-direction: column; gap: 9px; margin-top: 4px; padding-top: 10px; border-top: 1px solid var(--line); animation: fadein .3s cubic-bezier(.2,.8,.2,1); }
-.wk-pop-head { display: flex; justify-content: space-between; align-items: baseline; }
-.wk-pop-head .h2 { font-size: 20px; }
+.wk-pop { display: flex; flex-direction: column; gap: 9px; animation: fadein .3s cubic-bezier(.2,.8,.2,1); }
 .wk-f { display: flex; flex-direction: column; gap: 5px; font-size: 12px; font-weight: 700; }
 .wk-f input, .wk-f select { font-size: 14px; font-weight: 400; }
 .wk-f input:disabled { opacity: .5; }
