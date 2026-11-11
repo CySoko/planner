@@ -33,12 +33,20 @@ export function expandRepeats(items, from, days) {
 
 // The itinerary: one block per day; overdue open items are pulled onto today.
 // Done items stay on their original day (today or future only), shown after open items.
+// Starred open non-weekly items are pinned to today (with pinnedFrom set to their real date).
 export function groupByDay(items, steps, today, days = 7) {
   const end = addDays(today, days - 1);
   const openSingle = items.filter(i => isOpen(i) && i.date && i.repeat !== 'weekly');
   const doneSingle = items.filter(i => i.status === 'done' && i.date && i.date >= today && i.date <= end && i.repeat !== 'weekly');
   const openMapped = openSingle.map(i => (i.date < today ? { ...i, overdue: true, date: today } : i));
-  const all = openMapped.concat(doneSingle).concat(expandRepeats(items, today, days));
+
+  // Starred open non-weekly items pinned to today
+  const starredPins = items.filter(i =>
+    isOpen(i) && i.starred && i.repeat !== 'weekly' &&
+    !(i.date && i.date <= today)  // not already in today (overdue or today-dated)
+  ).map(i => ({ ...i, pinnedFrom: i.date || '', date: today }));
+
+  const all = openMapped.concat(doneSingle).concat(expandRepeats(items, today, days)).concat(starredPins);
   return Array.from({ length: days }, (_, k) => {
     const date = addDays(today, k);
     const dayItems = all.filter(i => i.date === date && i.date <= end)
@@ -47,6 +55,9 @@ export function groupByDay(items, steps, today, days = 7) {
         const bDone = b.status === 'done' ? 1 : 0;
         if (aDone !== bDone) return aDone - bDone;
         if (k === 0) {
+          const aStarred = (a.starred && !aDone) ? 0 : 1;
+          const bStarred = (b.starred && !bDone) ? 0 : 1;
+          if (aStarred !== bStarred) return aStarred - bStarred;
           const aArea = AREA_ORDER[a.area] ?? 9;
           const bArea = AREA_ORDER[b.area] ?? 9;
           if (aArea !== bArea) return aArea - bArea;

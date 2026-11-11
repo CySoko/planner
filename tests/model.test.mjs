@@ -462,6 +462,61 @@ test('resolveCapture: unsure guess in the preset area keeps its guessed group', 
   assert.equal(r.where, 'life/housing');
 });
 
+// ---- Starred pinning to today ----
+test('groupByDay: starred undated item appears in today with pinnedFrom empty string', () => {
+  const items = [item({ id: 'star1', date: '', starred: true })];
+  const days = groupByDay(items, [], '2026-11-02');
+  const todayItems = days[0].items;
+  assert.equal(todayItems.length, 1);
+  assert.equal(todayItems[0].id, 'star1');
+  assert.equal(todayItems[0].pinnedFrom, '');
+});
+
+test('groupByDay: starred item dated in 3 days appears in today (pinned) and on its own day', () => {
+  const items = [item({ id: 'star2', date: '2026-11-05', starred: true })];
+  const days = groupByDay(items, [], '2026-11-02');
+  const todayIds = days[0].items.map(i => i.id);
+  const thuIds = days[3].items.map(i => i.id);
+  assert.ok(todayIds.includes('star2'));
+  assert.ok(thuIds.includes('star2'));
+  assert.equal(days[0].items.find(i => i.id === 'star2').pinnedFrom, '2026-11-05');
+  assert.equal(days[3].items.find(i => i.id === 'star2').pinnedFrom, undefined);
+});
+
+test('groupByDay: starred item dated after the 7-day window appears only in today', () => {
+  const items = [item({ id: 'star3', date: '2026-11-20', starred: true })];
+  const days = groupByDay(items, [], '2026-11-02');
+  const allIds = days.flatMap(d => d.items.map(i => i.id));
+  const todayIds = days[0].items.map(i => i.id);
+  assert.ok(todayIds.includes('star3'));
+  // should not appear on any other day
+  assert.equal(allIds.filter(id => id === 'star3').length, 1);
+});
+
+test('groupByDay: starred open items sort above unstarred in today', () => {
+  const items = [
+    item({ id: 'unstarred', area: 'school', date: '2026-11-02', starred: false, created: '2026-10-01T00:00:00-07:00' }),
+    item({ id: 'starred', area: 'life', date: '2026-11-02', starred: true, created: '2026-10-01T00:00:00-07:00' }),
+  ];
+  const todayItems = groupByDay(items, [], '2026-11-02')[0].items;
+  assert.deepEqual(todayItems.map(i => i.id), ['starred', 'unstarred']);
+});
+
+test('groupByDay: done starred item is not pinned to today', () => {
+  const items = [item({ id: 'done_star', date: '2026-11-05', starred: true, status: 'done' })];
+  const days = groupByDay(items, [], '2026-11-02');
+  const todayIds = days[0].items.map(i => i.id);
+  assert.ok(!todayIds.includes('done_star'));
+});
+
+test('groupByDay: starred overdue item appears in today once, not duplicated', () => {
+  const items = [item({ id: 'overdue_star', date: '2026-10-30', starred: true })];
+  const days = groupByDay(items, [], '2026-11-02');
+  const todayIds = days[0].items.map(i => i.id);
+  assert.equal(todayIds.filter(id => id === 'overdue_star').length, 1);
+  assert.equal(days[0].items[0].overdue, true);
+});
+
 test('resolveCapture: no preset and no guess gives empty where', () => {
   const guess = { title: 'Random', area: '', group: '', date: '', time: '', type: '', confidence: {} };
   const r = resolveCapture(guess, {}, '', groups);

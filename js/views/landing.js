@@ -1,4 +1,4 @@
-import { groupByDay, areaSummary, quoteForDate, isStalled, scratchForDate } from '../model.js';
+import { groupByDay, areaSummary, quoteForDate, isStalled, scratchForDate, weekdayOf } from '../model.js';
 import { esc, AREAS, AREA_LABEL, groupName, allGroups, groupsFor, shortDate, check } from './ui.js';
 import { renderScratch } from './scratch.js';
 
@@ -9,7 +9,8 @@ export function renderLanding(state, today, nowIso) {
   const q = quoteForDate(today, quotes);
   const days = groupByDay(items, steps, today, 7);
   const weekItems = days.flatMap(d => d.items);
-  const weekOpen = weekItems.filter(i => i.status !== 'done');
+  const seen = new Set();
+  const weekOpen = weekItems.filter(i => i.status !== 'done' && !seen.has(i.id) && seen.add(i.id));
   const newInbox = inbox.filter(r => r.status === 'new').length;
   const stalled = groupsFor(context, 'projects').filter(g => isStalled(g.key, items, steps, nowIso)).length;
 
@@ -70,6 +71,15 @@ export function renderLanding(state, today, nowIso) {
 
 function wkLabel(it) {
   if (it.overdue) return { text: 'OVERDUE', cls: 'overdue' };
+  if (it.pinnedFrom !== undefined) {
+    if (it.pinnedFrom === '') return { text: '', cls: '' };
+    const day = weekdayOf(it.pinnedFrom);
+    const sd = shortDate(it.pinnedFrom);
+    const isDue = it.type === 'deadline';
+    const prefix = isDue ? 'DUE ' : '';
+    const timePart = it.time ? ' \u00b7 ' + it.time : '';
+    return { text: prefix + day + ' ' + sd + timePart, cls: isDue ? 'due' : '' };
+  }
   if (it.type === 'deadline') return { text: it.time ? 'DUE ' + it.time : 'DUE', cls: 'due' };
   if (it.type === 'event') return { text: it.time || 'ALL DAY', cls: '' };
   return { text: it.time ? 'TO DO \u00b7 ' + it.time : 'TO DO', cls: 'do' };
