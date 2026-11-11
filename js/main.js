@@ -592,6 +592,9 @@ function saveItemEdit(form) {
 
 function updateWkFade(el) { el.classList.toggle('at-end', el.scrollLeft + el.clientWidth >= el.scrollWidth - 4); }
 
+const AREAS = new Set(['school', 'life', 'projects']);
+function currentArea() { const r = (location.hash.replace(/^#\/?/, '') || '').split('?')[0]; return AREAS.has(r) ? r : ''; }
+
 // ---------- events ----------
 document.addEventListener('click', (e) => {
   const el = e.target.closest('[data-act]');
@@ -603,7 +606,7 @@ document.addEventListener('click', (e) => {
     try { localStorage.setItem('sokogen-theme-v2', next); } catch (err) { /* ignore */ }
     render();
   }
-  if (act === 'open-palette') openPalette(el.dataset.area);
+  if (act === 'open-palette') openPalette(el.dataset.area || currentArea());
   if (act === 'close-palette') closePalette();
   if (act === 'send-capture') sendCapture();
   if (act === 'file-capture') fileCapture();
@@ -661,7 +664,7 @@ document.addEventListener('submit', (e) => {
 });
 
 document.addEventListener('keydown', (e) => {
-  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openPalette(); }
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openPalette(currentArea()); }
   if (e.key === 'Escape' && state.ui.editing) { M.clearDrafts('edit-item', state.ui.editing); state.ui.editing = null; render(); return; }
   if (e.key === 'Escape' && !$('#palette').hidden) closePalette();
   if (e.target.id === 'capture' && e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); capGuess ? fileCapture() : sendCapture(); }
