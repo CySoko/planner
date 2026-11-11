@@ -69,7 +69,7 @@ function card(it, state, today) {
       ${block}
       <div class="card-main">
         <div class="card-title-row"><span class="chev" aria-hidden="true">▸</span>${it.starred ? '<span class="card-star" aria-hidden="true">\u2605</span>' : ''}<span class="card-title">${esc(it.title)}</span>
-          <span class="countdown ${cdCls}">${esc(it.repeat === 'weekly' ? 'weekly' : cd)}</span>${t && t.text !== 'DUE' ? `<span class="time ${t.cls}">${esc(t.text)}</span>` : ''}</div>
+          <span class="countdown ${cdCls}">${esc(it.repeat === 'weekly' ? 'weekly' : cd)}</span>${t && t.text !== 'DUE' ? `<span class="time ${t.cls}">${esc(t.text)}</span>` : ''}</div>${it.notes ? `\n        <div class="card-desc">${esc(it.notes)}</div>` : ''}
         <div class="progress"><div class="bar"><span style="width:${pct}%"></span></div><span class="n">${done}/${steps.length}</span></div>
       </div>
     </button>

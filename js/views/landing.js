@@ -97,6 +97,7 @@ function wkCard(it, context, editingId) {
     return `<div class="wk-card area-${esc(it.area)}${done ? ' done' : ''} editing">
       <form class="wk-pop" data-form="edit-item" data-id="${esc(it.id)}">
         <input class="wk-title-input" type="text" name="title" value="${esc(it.title)}" required>
+        <textarea class="wk-desc-input" name="notes" rows="2" placeholder="description (optional)">${esc(it.notes || '')}</textarea>
         <div class="wk-edit-more" hidden>
           <label class="wk-f">Date<input type="date" name="date" value="${esc(it.date || '')}" ${it.repeat === 'weekly' ? 'disabled' : ''}></label>
           ${it.repeat === 'weekly' ? '<p class="wk-note">Repeats weekly. Changes apply to every week.</p>' : ''}
@@ -111,7 +112,7 @@ function wkCard(it, context, editingId) {
   const box = it.occurrence ? '<span></span>' : check(done, 'toggle-item', it.id, it.title, it.area);
   return `<div class="wk-card area-${esc(it.area)}${done ? ' done' : ''}">
     <div class="wk-row">${box}<div class="wk-body">
-      <div class="wk-title">${esc(it.title)}</div>
+      <div class="wk-title">${esc(it.title)}</div>${it.notes ? `\n      <div class="wk-desc">${esc(it.notes)}</div>` : ''}
       <div class="wk-meta"><span class="tag">${esc(it.area)}</span> \u00b7 ${esc(shortGroup)}</div>
     </div></div>
     <div class="wk-foot"><span class="wk-tools">${it.occurrence ? '' : `<button class="wk-star${it.starred ? ' on' : ''}" data-act="toggle-star" data-id="${esc(it.id)}" aria-pressed="${!!it.starred}" aria-label="Star ${esc(it.title)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="${it.starred ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>`}${pencil}</span><span class="time ${label.cls}">${esc(label.text)}</span></div>

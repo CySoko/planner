@@ -410,6 +410,24 @@ test('loadDrafts returns a copy, not the live store', () => {
   assert.equal(loadDrafts()['add-item|school|title'], 'x');
 });
 
+test('applyItemEdit sets notes, trims it', () => {
+  const it = { id: 'it_n', title: 'T', area: 'school', group: 'neuro', date: '', time: '', type: 'deadline', repeat: 'none', status: 'open', updated: '' };
+  const edited = applyItemEdit(it, { notes: '  hello world  ' }, '2026-11-09T12:00:00-07:00');
+  assert.equal(edited.notes, 'hello world');
+});
+
+test('applyItemEdit clears notes with empty string', () => {
+  const it = { id: 'it_n2', title: 'T', area: 'school', group: 'neuro', date: '', time: '', type: 'deadline', repeat: 'none', status: 'open', updated: '', notes: 'old note' };
+  const edited = applyItemEdit(it, { notes: '' }, '2026-11-09T12:00:00-07:00');
+  assert.equal(edited.notes, '');
+});
+
+test('applyItemEdit leaves notes untouched when changes.notes is undefined', () => {
+  const it = { id: 'it_n3', title: 'T', area: 'school', group: 'neuro', date: '', time: '', type: 'deadline', repeat: 'none', status: 'open', updated: '', notes: 'keep me' };
+  const edited = applyItemEdit(it, { title: 'New' }, '2026-11-09T12:00:00-07:00');
+  assert.equal(edited.notes, 'keep me');
+});
+
 test('applyItemEdit ignores blank title', () => {
   const item = { id: 'it_3', title: 'Keep me', area: 'school', group: 'neuro', date: '', time: '', type: 'deadline', repeat: 'none', status: 'open', updated: '2026-11-01T10:00:00-07:00' };
   const edited = applyItemEdit(item, { title: '   ' }, '2026-11-09T12:00:00-07:00');

@@ -175,6 +175,7 @@ export function applyItemEdit(item, changes, nowIso) {
   if (item.repeat !== 'weekly' && changes.date !== undefined) out.date = changes.date;
   if (changes.time !== undefined) out.time = changes.time;
   if (changes.type) out.type = changes.type;
+  if (changes.notes !== undefined) out.notes = changes.notes.trim();
   if (changes.where) {
     const [area, group] = changes.where.split('/');
     if (area) out.area = area;

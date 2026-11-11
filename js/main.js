@@ -613,7 +613,8 @@ function saveItemEdit(form) {
   M.clearDrafts('edit-item', form.dataset.id || '');
   const edited = M.applyItemEdit(it, {
     title: f.get('title'), date: f.get('date') || '', time: f.get('time') || '',
-    type: f.get('type'), where: f.get('where')
+    type: f.get('type'), where: f.get('where'),
+    notes: f.has('notes') ? f.get('notes') : undefined
   }, nowIso());
   state.ui.editing = null;
   saveRows('Items', [edited]);
@@ -710,7 +711,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && !$('#palette').hidden) closePalette();
   if (e.target.id === 'capture' && e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); capGuess ? fileCapture() : sendCapture(); }
   if (e.target.closest && e.target.closest('.cap-grid') && e.key === 'Enter') { e.preventDefault(); fileCapture(); return; }
-  if (e.target.closest && e.target.closest('[data-form="edit-item"]') && e.key === 'Enter') { e.preventDefault(); saveItemEdit(e.target.closest('[data-form="edit-item"]')); return; }
+  if (e.target.closest && e.target.closest('[data-form="edit-item"]') && e.key === 'Enter') { if (e.shiftKey && e.target.tagName === 'TEXTAREA') return; e.preventDefault(); saveItemEdit(e.target.closest('[data-form="edit-item"]')); return; }
   if (e.target.dataset && e.target.dataset.stepInput && e.key === 'Enter') { e.preventDefault(); addStep(e.target.dataset.stepInput); }
   if (e.target.dataset && e.target.dataset.scratchInput !== undefined) {
     if (e.key === 'Enter') { e.preventDefault(); scratchEnter(e.target); }
