@@ -332,14 +332,6 @@ function openPalette(presetArea) {
   const ta = $('#capture'); previewCapture(); ta.focus();
 }
 function closePalette() { $('#palette').hidden = true; $('#capture-error').hidden = true; }
-function snapshotCapGrid() {
-  const grid = document.querySelector('.cap-grid');
-  if (!grid) return;
-  grid.querySelectorAll('input, select').forEach(el => {
-    if (el.name && el.name.startsWith('cap-')) capOverrides[el.name.slice(4)] = el.value;
-  });
-}
-
 function showToast(html) {
   clearTimeout(toastTimer);
   const el = $('#toast');
@@ -449,7 +441,6 @@ function fileCapture() {
   const err = $('#capture-error');
   if (!text || !capGuess) { err.textContent = 'Type or dictate something first.'; err.hidden = false; return; }
 
-  snapshotCapGrid();
   const groups = allGroups(state.data.context);
   const resolved = M.resolveCapture(capGuess, capOverrides, capPreset, groups);
   const where = resolved.where;
@@ -607,7 +598,7 @@ document.addEventListener('click', (e) => {
   if (act === 'toggle-step') toggleStep(id);
   if (act === 'add-step') addStep(id);
   if (act === 'toggle-card') { state.ui.open[id] = !state.ui.open[id]; el.closest('.card').classList.toggle('open'); el.setAttribute('aria-expanded', String(!!state.ui.open[id])); }
-  if (act === 'toggle-cap-expand') { snapshotCapGrid(); capExpanded = !capExpanded; previewCapture(); }
+  if (act === 'toggle-cap-expand') { capExpanded = !capExpanded; previewCapture(); }
   if (act === 'dismiss') { const row = state.data.inbox.find(r => r.id === id); if (row) saveRows('Inbox', [M.dismissCapture(row)]); }
   if (act === 'accept-suggestion') acceptSuggestion(id);
   if (act === 'use-alt') {
