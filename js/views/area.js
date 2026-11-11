@@ -38,7 +38,6 @@ export function renderArea(area, state, today, nowIso) {
     <div class="page-head">
       <div><h1 class="page-title">${AREA_LABEL[area]}</h1>
         <div class="muted"><b style="color:var(--text)">${open.length} big item${open.length === 1 ? '' : 's'}</b> · ${stepsLeft} step${stepsLeft === 1 ? '' : 's'} left</div></div>
-      <button class="btn primary" data-act="open-palette" data-area="${area}">+ add task</button>
     </div>
     ${body}
   </div>`;
