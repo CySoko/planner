@@ -17,7 +17,7 @@ const state = {
   sync: 'loading',
   lastSync: null,
   flushing: false,
-  ui: { open: {}, adding: null, offer: null, editing: null, scratchDate: null, scratchFocus: null }
+  ui: { open: {}, offer: null, editing: null, scratchDate: null, scratchFocus: null }
 };
 
 const $ = sel => document.querySelector(sel);
@@ -312,20 +312,33 @@ const nowIso = () => api.localIso();
 let capLastText = '';
 let capOverrides = {};
 let capGuess = null;
+let capExpanded = false;
 let toastTimer = null;
 let toastUndoId = null;
 
-function openPalette() {
+function openPalette(presetArea) {
   const pal = $('#palette');
   if (pal.hidden) {
-    capLastText = ''; capOverrides = {}; capGuess = null;
+    capLastText = ''; capOverrides = {}; capGuess = null; capExpanded = false;
     $('#capture').value = '';
+  }
+  if (presetArea) {
+    const first = allGroups(state.data.context).find(g => g.area === presetArea);
+    if (first) capOverrides.where = first.area + '/' + first.key;
+    capExpanded = false;
   }
   hideToast();
   pal.hidden = false;
   const ta = $('#capture'); previewCapture(); ta.focus();
 }
 function closePalette() { $('#palette').hidden = true; $('#capture-error').hidden = true; }
+function snapshotCapGrid() {
+  const grid = document.querySelector('.cap-grid');
+  if (!grid) return;
+  grid.querySelectorAll('input, select').forEach(el => {
+    if (el.name && el.name.startsWith('cap-')) capOverrides[el.name.slice(4)] = el.value;
+  });
+}
 
 function showToast(html) {
   clearTimeout(toastTimer);
@@ -381,13 +394,34 @@ function previewCapture() {
   const timeVal = capOverrides.time !== undefined ? capOverrides.time : (g.time || '');
   const typeVal = capOverrides.type || g.type || 'deadline';
 
-  const whereOpts = (whereVal ? '' : '<option value="">\u2014</option>') +
-    groups.map(gr => `<option value="${esc(gr.area + '/' + gr.key)}" ${gr.area + '/' + gr.key === whereVal ? 'selected' : ''}>${esc(AREA_LABEL[gr.area])} \u00b7 ${esc(gr.name)}</option>`).join('');
-  const typeOpts = ['deadline', 'event', 'do-date'].map(t => `<option ${t === typeVal ? 'selected' : ''}>${t}</option>`).join('');
-
   const [destArea, destGroup] = (whereVal || '').split('/');
   const destName = destGroup ? groupName(state.data.context, destGroup) : '';
   const destLabel = destArea ? `add to ${destName}` : 'choose where';
+
+  // Compact summary (default) vs full grid (expanded)
+  const summaryParts = [];
+  if (destArea) summaryParts.push(`${esc(AREA_LABEL[destArea])} \u00b7 ${esc(destName)}`);
+  if (dateVal) summaryParts.push(esc(shortDate(dateVal)));
+  summaryParts.push(esc(typeVal));
+  const summaryLine = summaryParts.join(' \u00a0\u2022\u00a0 ');
+
+  if (!capExpanded) {
+    fields.innerHTML = `
+      <div class="cap-summary">
+        <span class="cap-summary-text">${titleVal ? '<b>' + esc(titleVal) + '</b> \u2014 ' : ''}${summaryLine}</span>
+        <button class="btn small" data-act="toggle-cap-expand">more \u25b8</button>
+      </div>
+      <div class="cap-foot">
+        <button class="btn" data-act="close-palette">esc</button>
+        <button class="btn" data-act="send-capture">inbox instead</button>
+        <button class="btn primary" data-act="file-capture" ${!whereVal ? 'disabled' : ''}>${esc(destLabel)} \u21b5</button>
+      </div>`;
+    return;
+  }
+
+  const whereOpts = (whereVal ? '' : '<option value="">\u2014</option>') +
+    groups.map(gr => `<option value="${esc(gr.area + '/' + gr.key)}" ${gr.area + '/' + gr.key === whereVal ? 'selected' : ''}>${esc(AREA_LABEL[gr.area])} \u00b7 ${esc(gr.name)}</option>`).join('');
+  const typeOpts = ['deadline', 'event', 'do-date'].map(t => `<option ${t === typeVal ? 'selected' : ''}>${t}</option>`).join('');
 
   fields.innerHTML = `
     <div class="cap-grid">
@@ -398,6 +432,7 @@ function previewCapture() {
       <label class="cap-f">Type<select name="cap-type">${typeOpts}</select></label>
     </div>
     <div class="cap-foot">
+      <button class="btn small" data-act="toggle-cap-expand">\u25c2 less</button>
       <button class="btn" data-act="close-palette">esc</button>
       <button class="btn" data-act="send-capture">inbox instead</button>
       <button class="btn primary" data-act="file-capture" ${!whereVal ? 'disabled' : ''}>${esc(destLabel)} \u21b5</button>
@@ -425,11 +460,12 @@ function fileCapture() {
   const chosen = { area, group, title: title || capGuess.title, date, time, type, parentId: capGuess.parentId || '', steps: [] };
   const r = M.acceptCapture(synth, chosen, now);
 
+  $('#capture').value = '';
+  closePalette();
+
   if (r.items.length) saveRows('Items', r.items);
   if (r.steps.length) saveRows('Steps', r.steps);
   if (r.log.length) saveRows('Log', r.log);
-
-  closePalette();
 
   // Toast
   const today = M.todayIso();
@@ -461,8 +497,9 @@ function sendCapture() {
   const payload = { text, now: nowIso(), localId: 'pending_' + M.newId('c') };
   state.queue = Q.enqueue(state.queue, { id: M.newId('op'), kind: 'capture', payload });
   state.data.inbox.push(pendingInboxRow(payload));
-  persist();
+  $('#capture').value = '';
   closePalette();
+  persist();
   showToast(`<span>Sent to Inbox to sort later</span><button class="toast-btn" data-act="dismiss-toast" aria-label="Dismiss">\u2715</button>`);
   render();
   flushSoon();
@@ -490,20 +527,6 @@ function addStep(itemId) {
   if (again) again.focus();
 }
 
-function addItem(form) {
-  const f = new FormData(form), now = nowIso();
-  const title = String(f.get('title') || '').trim();
-  if (!title) return;
-  form.reset();
-  M.clearDrafts('add-item', form.dataset.area || '');
-  state.ui.adding = null;
-  const item = {
-    id: M.newId('it'), area: form.dataset.area, group: f.get('group'), title, date: f.get('date') || '', time: f.get('time') || '',
-    type: f.get('type') || 'deadline', repeat: f.get('repeat') || 'none', status: 'open', notes: '', created: now, updated: now
-  };
-  state.ui.open[item.id] = true;
-  saveRows('Items', [item]);
-}
 
 function acceptInbox(form) {
   const row = state.data.inbox.find(r => r.id === form.dataset.id);
@@ -570,7 +593,7 @@ document.addEventListener('click', (e) => {
     try { localStorage.setItem('sokogen-theme-v2', next); } catch (err) { /* ignore */ }
     render();
   }
-  if (act === 'open-palette') openPalette();
+  if (act === 'open-palette') openPalette(el.dataset.area);
   if (act === 'close-palette') closePalette();
   if (act === 'send-capture') sendCapture();
   if (act === 'file-capture') fileCapture();
@@ -578,7 +601,8 @@ document.addEventListener('click', (e) => {
   if (act === 'toggle-step') toggleStep(id);
   if (act === 'add-step') addStep(id);
   if (act === 'toggle-card') { state.ui.open[id] = !state.ui.open[id]; el.closest('.card').classList.toggle('open'); el.setAttribute('aria-expanded', String(!!state.ui.open[id])); }
-  if (act === 'toggle-add') { if (state.ui.adding === el.dataset.area) M.clearDrafts('add-item', el.dataset.area || ''); state.ui.adding = state.ui.adding === el.dataset.area ? null : el.dataset.area; render(); }
+  if (act === 'toggle-add') { openPalette(el.dataset.area); }
+  if (act === 'toggle-cap-expand') { snapshotCapGrid(); capExpanded = !capExpanded; previewCapture(); }
   if (act === 'dismiss') { const row = state.data.inbox.find(r => r.id === id); if (row) saveRows('Inbox', [M.dismissCapture(row)]); }
   if (act === 'accept-suggestion') acceptSuggestion(id);
   if (act === 'use-alt') {
@@ -623,7 +647,6 @@ document.addEventListener('click', (e) => {
 
 document.addEventListener('submit', (e) => {
   const form = e.target;
-  if (form.dataset.form === 'add-item') { e.preventDefault(); addItem(form); }
   if (form.dataset.form === 'accept') { e.preventDefault(); acceptInbox(form); }
   if (form.dataset.form === 'edit-item') { e.preventDefault(); saveItemEdit(form); }
 });

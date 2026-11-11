@@ -34,14 +34,13 @@ export function renderArea(area, state, today, nowIso) {
   }
   if (!open.length) body += `<p class="empty">Nothing open in ${AREA_LABEL[area]}. Use + add task to start one.</p>`;
 
-  const form = state.ui.adding === area ? addForm(area, groups) : '';
   return `<div class="area-${area}">
     <div class="page-head">
       <div><h1 class="page-title">${AREA_LABEL[area]}</h1>
         <div class="muted"><b style="color:var(--text)">${open.length} big item${open.length === 1 ? '' : 's'}</b> · ${stepsLeft} step${stepsLeft === 1 ? '' : 's'} left</div></div>
-      <button class="btn primary" data-act="toggle-add" data-area="${area}">+ add task</button>
+      <button class="btn primary" data-act="open-palette" data-area="${area}">+ add task</button>
     </div>
-    ${form}${body}
+    ${body}
   </div>`;
 }
 
@@ -85,16 +84,3 @@ function card(it, state, today) {
 }
 
 function weekday(iso) { return ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'][new Date(iso + 'T12:00:00Z').getUTCDay()]; }
-
-function addForm(area, groups) {
-  return `<form class="panel form" data-form="add-item" data-area="${area}">
-    <label class="wide">Title<input type="text" name="title" required placeholder="${area === 'school' ? 'Sound final mix' : area === 'life' ? 'Lease walkthrough' : 'Order chainring'}"></label>
-    <label>${area === 'school' ? 'Class' : area === 'life' ? 'Part of life' : 'Project'}<select name="group">${groups.map(g => `<option value="${esc(g.key)}">${esc(g.name)}</option>`).join('')}</select></label>
-    <label>Date<input type="date" name="date"></label>
-    <label>Time<input type="time" name="time"></label>
-    <label>Type<select name="type"><option value="deadline">deadline</option><option value="event">event</option><option value="do-date">do-date</option></select></label>
-    ${area === 'life' ? '<label>Repeats<select name="repeat"><option value="none">no</option><option value="weekly">every week</option></select></label>' : ''}
-    <div class="row-end wide"><button type="button" class="btn" data-act="toggle-add" data-area="${area}">cancel</button><button class="btn primary" type="submit">create ↵</button></div>
-  </form>`;
-}
-
