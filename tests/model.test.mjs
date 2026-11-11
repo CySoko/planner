@@ -68,6 +68,63 @@ test('groupByDay: weekly repeats appear on each matching day', () => {
   assert.equal(days[5].date, '2026-11-07');
 });
 
+test('groupByDay today: items sorted school -> projects -> life', () => {
+  const items = [
+    item({ id: 'l1', area: 'life', date: '2026-11-02', created: '2026-10-01T00:00:00-07:00' }),
+    item({ id: 's1', area: 'school', date: '2026-11-02', created: '2026-10-02T00:00:00-07:00' }),
+    item({ id: 'p1', area: 'projects', date: '2026-11-02', created: '2026-10-03T00:00:00-07:00' }),
+  ];
+  const today = groupByDay(items, [], '2026-11-02')[0];
+  assert.deepEqual(today.items.map(i => i.id), ['s1', 'p1', 'l1']);
+});
+
+test('groupByDay today: within area, timed items before untimed, sorted by time', () => {
+  const items = [
+    item({ id: 's_notime', area: 'school', date: '2026-11-02', time: '', created: '2026-10-01T00:00:00-07:00' }),
+    item({ id: 's_14', area: 'school', date: '2026-11-02', time: '14:00', created: '2026-10-01T00:00:00-07:00' }),
+    item({ id: 's_09', area: 'school', date: '2026-11-02', time: '09:00', created: '2026-10-03T00:00:00-07:00' }),
+  ];
+  const today = groupByDay(items, [], '2026-11-02')[0];
+  assert.deepEqual(today.items.map(i => i.id), ['s_09', 's_14', 's_notime']);
+});
+
+test('groupByDay today: untimed items sorted by created ascending, ties by id', () => {
+  const items = [
+    item({ id: 'b', area: 'school', date: '2026-11-02', time: '', created: '2026-10-05T00:00:00-07:00' }),
+    item({ id: 'a', area: 'school', date: '2026-11-02', time: '', created: '2026-10-01T00:00:00-07:00' }),
+  ];
+  const today = groupByDay(items, [], '2026-11-02')[0];
+  assert.deepEqual(today.items.map(i => i.id), ['a', 'b']);
+});
+
+test('groupByDay today: overdue life item does not jump above school items', () => {
+  const items = [
+    item({ id: 'overdue_life', area: 'life', date: '2026-10-30', created: '2026-09-01T00:00:00-07:00' }),
+    item({ id: 'school1', area: 'school', date: '2026-11-02', created: '2026-10-01T00:00:00-07:00' }),
+  ];
+  const today = groupByDay(items, [], '2026-11-02')[0];
+  assert.deepEqual(today.items.map(i => i.id), ['school1', 'overdue_life']);
+});
+
+test('groupByDay today: done items come last, still in area/time/created order', () => {
+  const items = [
+    item({ id: 'done_s', area: 'school', date: '2026-11-02', status: 'done', created: '2026-10-01T00:00:00-07:00' }),
+    item({ id: 'open_l', area: 'life', date: '2026-11-02', created: '2026-10-01T00:00:00-07:00' }),
+    item({ id: 'done_l', area: 'life', date: '2026-11-02', status: 'done', time: '10:00', created: '2026-10-01T00:00:00-07:00' }),
+  ];
+  const today = groupByDay(items, [], '2026-11-02')[0];
+  assert.deepEqual(today.items.map(i => i.id), ['open_l', 'done_s', 'done_l']);
+});
+
+test('groupByDay non-today: still sorts overdue first then by time', () => {
+  const items = [
+    item({ id: 'a', area: 'life', date: '2026-11-05', time: '14:00' }),
+    item({ id: 'b', area: 'school', date: '2026-11-05', time: '09:30' }),
+  ];
+  const thu = groupByDay(items, [], '2026-11-02')[3];
+  assert.deepEqual(thu.items.map(i => i.id), ['b', 'a']);
+});
+
 test('areaSummary: open count excludes done, next is the earliest dated open item, pct from steps', () => {
   const items = [item({ id: 'a', date: '2026-11-05', title: 'Emergence' }), item({ id: 'b', date: '2026-11-13' }), item({ id: 'c', status: 'done' }), item({ id: 'l', area: 'life' })];
   const steps = [step({ itemId: 'a', done: true }), step({ itemId: 'a' }), step({ itemId: 'b', done: true }), step({ itemId: 'c', done: false })];

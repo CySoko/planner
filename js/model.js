@@ -1,6 +1,7 @@
 // Pure helpers the views use. No DOM, no network: everything here is tested.
 
 const WD = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+const AREA_ORDER = { school: 0, projects: 1, life: 2 };
 const pad = n => String(n).padStart(2, '0');
 const toUtc = d => { const [y, m, dd] = d.split('-').map(Number); return Date.UTC(y, m - 1, dd); };
 const fromUtc = ms => { const x = new Date(ms); return x.getUTCFullYear() + '-' + pad(x.getUTCMonth() + 1) + '-' + pad(x.getUTCDate()); };
@@ -45,6 +46,17 @@ export function groupByDay(items, steps, today, days = 7) {
         const aDone = a.status === 'done' ? 1 : 0;
         const bDone = b.status === 'done' ? 1 : 0;
         if (aDone !== bDone) return aDone - bDone;
+        if (k === 0) {
+          const aArea = AREA_ORDER[a.area] ?? 9;
+          const bArea = AREA_ORDER[b.area] ?? 9;
+          if (aArea !== bArea) return aArea - bArea;
+          const aHasTime = a.time ? 0 : 1;
+          const bHasTime = b.time ? 0 : 1;
+          if (aHasTime !== bHasTime) return aHasTime - bHasTime;
+          if (a.time && b.time) return a.time.localeCompare(b.time);
+          if (!a.time && !b.time) return (a.created || '').localeCompare(b.created || '') || (a.id || '').localeCompare(b.id || '');
+          return 0;
+        }
         if (!aDone) return (b.overdue ? 1 : 0) - (a.overdue ? 1 : 0) || (a.time || '99:99').localeCompare(b.time || '99:99');
         return (a.time || '99:99').localeCompare(b.time || '99:99');
       });
