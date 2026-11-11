@@ -120,6 +120,8 @@ textarea { font-size: 17px; resize: vertical; }
 .wk-card .time { margin-left: auto; margin-top: 0; font-size: 9px; padding: 1px 5px; border-radius: 6px; }
 .wk-card .time.do { border-style: dashed; }
 .wk-empty { color: var(--dim); font-size: 13px; text-align: center; padding: 10px 0; border: 1px dashed var(--line); border-radius: 12px; }
+.wk-add { width: 100%; margin-top: 8px; padding: 6px; border: 1px dashed var(--line); border-radius: 10px; background: none; color: var(--muted); font-size: 12px; cursor: pointer; transition: border-color .2s, color .2s; }
+.wk-add:hover, .wk-add:focus-visible { border-color: var(--line-strong); color: var(--text); }
 .wk-more { font-size: 11px; color: var(--muted); font-weight: 400; }
 .wk-card.editing { border-color: var(--area); z-index: 5; transform: none; }
 .wk-edit { position: absolute; top: 6px; right: 6px; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--panel-solid); color: var(--text); cursor: pointer; opacity: 0; transition: opacity .25s, border-color .25s; }

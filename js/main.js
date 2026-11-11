@@ -333,23 +333,26 @@ let capOverrides = {};
 let capGuess = null;
 let capExpanded = false;
 let capPreset = '';
+let capPresetDate = '';
 let toastTimer = null;
 let toastUndo = null;
 let scratchLastText = { id: '', text: '' };
 let scratchDeleting = false;
 
-function openPalette(presetArea) {
+function openPalette(presetArea, presetDate) {
   const pal = $('#palette');
   if (pal.hidden) {
-    capLastText = ''; capOverrides = {}; capGuess = null; capExpanded = false; capPreset = '';
+    capLastText = ''; capOverrides = {}; capGuess = null; capExpanded = false; capPreset = ''; capPresetDate = '';
     $('#capture').value = '';
   }
   if (presetArea) {
     capPreset = presetArea;
     capExpanded = false;
   }
+  capPresetDate = presetDate || '';
   hideToast();
   pal.hidden = false;
+  $('#palette').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   const ta = $('#capture'); previewCapture(); ta.focus();
 }
 function closePalette() { $('#palette').hidden = true; $('#capture-error').hidden = true; }
@@ -410,7 +413,7 @@ function previewCapture() {
   capGuess = g;
 
   const groups = allGroups(state.data.context);
-  const resolved = M.resolveCapture(g, capOverrides, capPreset, groups);
+  const resolved = M.resolveCapture(g, capOverrides, capPreset, groups, capPresetDate);
   const whereVal = resolved.where;
   const titleVal = resolved.title;
   const dateVal = resolved.date;
@@ -474,7 +477,7 @@ function fileCapture() {
   if (!text || !capGuess) { err.textContent = 'Type or dictate something first.'; err.hidden = false; return; }
 
   const groups = allGroups(state.data.context);
-  const resolved = M.resolveCapture(capGuess, capOverrides, capPreset, groups);
+  const resolved = M.resolveCapture(capGuess, capOverrides, capPreset, groups, capPresetDate);
   const where = resolved.where;
   if (!where && !capExpanded) {
     capExpanded = true;
@@ -632,7 +635,7 @@ document.addEventListener('click', (e) => {
     try { localStorage.setItem('sokogen-theme-v2', next); } catch (err) { /* ignore */ }
     render();
   }
-  if (act === 'open-palette') openPalette(el.dataset.area || currentArea());
+  if (act === 'open-palette') openPalette(el.dataset.area || currentArea(), el.dataset.date || '');
   if (act === 'close-palette') closePalette();
   if (act === 'send-capture') sendCapture();
   if (act === 'file-capture') fileCapture();

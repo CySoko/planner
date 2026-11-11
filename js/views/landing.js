@@ -17,7 +17,8 @@ export function renderLanding(state, today, nowIso) {
   const colHtml = days.map(d => `
     <div class="wk-col${d.today ? ' is-today' : ''}">
       <div class="wk-head"><span class="wd">${d.weekday}</span><span class="num">${d.num}</span></div>
-      ${d.items.length ? `<div class="wk-items">${d.items.map(it => wkCard(it, context, state.ui.editing)).join('')}</div>` : `<div class="wk-empty">${d.today ? 'Nothing due today.' : '—'}</div>`}
+      ${d.items.length ? `<div class="wk-items">${d.items.map(it => wkCard(it, context, state.ui.editing)).join('')}</div>` : (d.today ? '<div class="wk-empty">Nothing due today.</div>' : '')}
+      <button class="wk-add" data-act="open-palette" data-date="${d.date}">+ add</button>
     </div>`).join('');
 
   const doors = AREAS.map(a => {

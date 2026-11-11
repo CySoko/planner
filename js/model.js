@@ -245,11 +245,11 @@ export function _draftStoreForTest() { return _drafts; }
 
 // ---- Capture resolution ----
 // Combines parser guess, user overrides, and preset area into final capture fields.
-export function resolveCapture(guess, overrides, presetArea, groups) {
+export function resolveCapture(guess, overrides, presetArea, groups, presetDate = '') {
   const g = guess || {};
   const conf = g.confidence || {};
   const title = overrides.title !== undefined ? overrides.title : (g.title || '');
-  const date = overrides.date !== undefined ? overrides.date : (g.date || '');
+  const date = overrides.date !== undefined ? overrides.date : (g.date || presetDate);
   const time = overrides.time !== undefined ? overrides.time : (g.time || '');
   const type = overrides.type || g.type || 'deadline';
 

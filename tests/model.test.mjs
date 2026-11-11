@@ -523,3 +523,21 @@ test('resolveCapture: no preset and no guess gives empty where', () => {
   assert.equal(r.where, '');
   assert.equal(r.type, 'deadline');
 });
+
+test('resolveCapture: presetDate fills date when guess has none', () => {
+  const guess = { title: 'Buy tape', area: 'life', group: 'health', date: '', time: '', type: 'deadline', confidence: { where: 'sure' } };
+  const r = resolveCapture(guess, {}, '', groups, '2026-11-05');
+  assert.equal(r.date, '2026-11-05');
+});
+
+test('resolveCapture: guessed date beats presetDate', () => {
+  const guess = { title: 'Reading', area: 'school', group: 'neuro', date: '2026-11-10', time: '', type: 'deadline', confidence: { where: 'sure' } };
+  const r = resolveCapture(guess, {}, '', groups, '2026-11-05');
+  assert.equal(r.date, '2026-11-10');
+});
+
+test('resolveCapture: override date beats both guess and presetDate', () => {
+  const guess = { title: 'Reading', area: 'school', group: 'neuro', date: '2026-11-10', time: '', type: 'deadline', confidence: { where: 'sure' } };
+  const r = resolveCapture(guess, { date: '2026-12-01' }, '', groups, '2026-11-05');
+  assert.equal(r.date, '2026-12-01');
+});
