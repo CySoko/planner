@@ -91,7 +91,7 @@ function wkCard(it, context, editingId) {
   const editing = editingId === it.id;
   const label = wkLabel(it);
   const shortGroup = groupName(context, it.group).split(' \u00b7 ')[0];
-  const pencil = `<button class="wk-edit" data-act="edit-item" data-id="${esc(it.id)}" aria-label="Edit ${esc(it.title)}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>`;
+  const pencil = `<button class="wk-edit" data-act="edit-item" data-id="${esc(it.id)}" aria-label="Edit ${esc(it.title)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>`;
   const groups = allGroups(context);
   if (editing) {
     return `<div class="wk-card area-${esc(it.area)}${done ? ' done' : ''} editing">

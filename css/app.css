@@ -125,7 +125,7 @@ textarea { font-size: 17px; resize: vertical; }
 .wk-more { font-size: 11px; color: var(--muted); font-weight: 400; }
 .wk-card.editing { border-color: var(--area); z-index: 5; transform: none; }
 .wk-tools { display: inline-flex; gap: 6px; align-items: center; }
-.wk-edit { width: 16px; height: 16px; border: 0; background: none; color: var(--muted); cursor: pointer; padding: 0; opacity: 0; transition: opacity .25s; display: inline-flex; align-items: center; justify-content: center; }
+.wk-edit { width: 14px; height: 14px; border: 0; background: none; color: var(--muted); cursor: pointer; padding: 0; opacity: 0; transition: opacity .25s; display: inline-flex; align-items: center; justify-content: center; }
 .wk-card:hover .wk-edit, .wk-card:focus-within .wk-edit { opacity: 1; }
 .wk-edit:hover { color: var(--area); }
 @media (hover: none) { .wk-edit { opacity: .75; } .wk-star:not(.on) { opacity: .75; } }
