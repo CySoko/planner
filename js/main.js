@@ -482,6 +482,7 @@ function addStep(itemId) {
   const input = document.querySelector(`[data-step-input="${CSS.escape(itemId)}"]`);
   const text = input && input.value.trim();
   if (!text) return;
+  input.value = '';
   M.clearDrafts('step', itemId);
   const existing = state.data.steps.filter(s => s.itemId === itemId).map(s => Number(s.order) || 0);
   saveRows('Steps', [{ id: M.newId('st'), itemId, text, done: false, order: (existing.length ? Math.max(...existing) : 0) + 1, updated: nowIso() }]);
@@ -493,6 +494,7 @@ function addItem(form) {
   const f = new FormData(form), now = nowIso();
   const title = String(f.get('title') || '').trim();
   if (!title) return;
+  form.reset();
   M.clearDrafts('add-item', form.dataset.area || '');
   state.ui.adding = null;
   const item = {
@@ -506,6 +508,7 @@ function addItem(form) {
 function acceptInbox(form) {
   const row = state.data.inbox.find(r => r.id === form.dataset.id);
   const f = new FormData(form);
+  form.reset();
   M.clearDrafts('accept', form.dataset.id || '');
   const where = String(f.get('where') || '');
   const parentId = String(f.get('parentId') || '');
@@ -543,8 +546,9 @@ function commitAccept(r) {
 function saveItemEdit(form) {
   const it = state.data.items.find(i => i.id === form.dataset.id);
   if (!it) return;
-  M.clearDrafts('edit-item', form.dataset.id || '');
   const f = new FormData(form);
+  form.reset();
+  M.clearDrafts('edit-item', form.dataset.id || '');
   const edited = M.applyItemEdit(it, {
     title: f.get('title'), date: f.get('date') || '', time: f.get('time') || '',
     type: f.get('type'), where: f.get('where')
