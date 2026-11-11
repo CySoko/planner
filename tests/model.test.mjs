@@ -176,7 +176,7 @@ test('buildSyntheticInboxRow handles null guess fields gracefully', () => {
   assert.equal(row.guessParent, '');
 });
 
-import { scratchForDate, insertAfter, carryToToday } from '../js/model.js';
+import { scratchForDate, insertAfter, carryToToday, restoreScratchRow } from '../js/model.js';
 
 const TODAY = '2026-11-02';
 const sc = (o) => ({ id: 'sc_1', date: TODAY, text: 'foo', done: false, order: 1, updated: NOW, deleted: false, ...o });
@@ -200,6 +200,17 @@ test('insertAfter: new row order falls between afterId and the next bullet', () 
   assert.equal(nr.text, '');
   assert.equal(nr.done, false);
   assert.equal(nr.deleted, false);
+});
+
+test('restoreScratchRow: text restored, deleted false, updated set, id/date/order unchanged', () => {
+  const row = sc({ id: 'sc_del', text: 'old', deleted: true, order: 5, updated: '2026-11-02T10:00:00-07:00' });
+  const restored = restoreScratchRow(row, 'buy tape', '2026-11-02T12:00:00-07:00');
+  assert.equal(restored.text, 'buy tape');
+  assert.equal(restored.deleted, false);
+  assert.equal(restored.updated, '2026-11-02T12:00:00-07:00');
+  assert.equal(restored.id, 'sc_del');
+  assert.equal(restored.date, TODAY);
+  assert.equal(restored.order, 5);
 });
 
 test('carryToToday: returns old row done:true and new today row with same text, done:false', () => {

@@ -252,6 +252,16 @@ function scratchDeleteBullet(el) {
   if (row) saveScratchRowQuiet({ ...row, deleted: true, updated: nowIso() });
   redrawScratch();
   if (prevId) focusScratchBullet(prevId);
+  if (scratchLastText.id === id && scratchLastText.text) {
+    const thatText = scratchLastText.text;
+    toastUndo = () => {
+      const r = state.data.scratch.find(r => r.id === id);
+      if (r) saveScratchRowQuiet(M.restoreScratchRow(r, thatText, nowIso()));
+      redrawScratch();
+      focusScratchBullet(id);
+    };
+    showToast('<span>Line deleted</span><button class="toast-btn" data-act="undo-toast">undo</button><button class="toast-btn" data-act="dismiss-toast" aria-label="Dismiss">\u2715</button>');
+  }
 }
 
 function scratchCreateFirst(text) {
@@ -315,7 +325,8 @@ let capGuess = null;
 let capExpanded = false;
 let capPreset = '';
 let toastTimer = null;
-let toastUndoId = null;
+let toastUndo = null;
+let scratchLastText = { id: '', text: '' };
 
 function openPalette(presetArea) {
   const pal = $('#palette');
@@ -342,13 +353,12 @@ function showToast(html) {
 function hideToast() {
   clearTimeout(toastTimer);
   $('#toast').hidden = true;
-  toastUndoId = null;
+  toastUndo = null;
 }
 function undoToast() {
-  if (!toastUndoId) return;
-  const it = state.data.items.find(i => i.id === toastUndoId);
-  if (it) saveRows('Items', [{ ...it, status: 'archived', updated: nowIso() }]);
-  toastUndoId = null;
+  if (!toastUndo) return;
+  toastUndo();
+  toastUndo = null;
   const el = $('#toast');
   el.innerHTML = '<span>Undone</span><button class="toast-btn" data-act="dismiss-toast" aria-label="Dismiss">\u2715</button>';
   clearTimeout(toastTimer);
@@ -493,7 +503,10 @@ function fileCapture() {
     } else {
       msg += ` \u00b7 no date, find it on the ${esc(AREA_LABEL[it.area])} page`;
     }
-    toastUndoId = it.id;
+    toastUndo = () => {
+      const fresh = state.data.items.find(i => i.id === it.id);
+      if (fresh) saveRows('Items', [{ ...fresh, status: 'archived', updated: nowIso() }]);
+    };
     showToast(`<span>${msg}</span><button class="toast-btn" data-act="undo-toast">undo</button><button class="toast-btn" data-act="dismiss-toast" aria-label="Dismiss">\u2715</button>`);
   }
 
@@ -684,7 +697,9 @@ document.addEventListener('input', (e) => {
   }
   if (e.target.dataset && e.target.dataset.scratchInput !== undefined) {
     const id = e.target.dataset.id;
-    if (id !== '__new') scheduleScratchSave(id, e.target.value.trim());
+    const t = e.target.value.trim();
+    if (t) scratchLastText = { id, text: t };
+    if (id !== '__new') scheduleScratchSave(id, t);
   }
 });
 document.addEventListener('change', (e) => {
@@ -705,6 +720,8 @@ document.addEventListener('change', (e) => {
 document.addEventListener('focusin', (e) => {
   if (e.target.dataset && e.target.dataset.scratchInput !== undefined) {
     state.ui.scratchFocus = { id: e.target.dataset.id };
+    const t = e.target.value.trim();
+    if (t) scratchLastText = { id: e.target.dataset.id, text: t };
   }
 });
 document.addEventListener('focusout', (e) => {

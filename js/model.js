@@ -170,6 +170,10 @@ export function insertAfter(rows, date, afterId, now) {
   return { id: newId('sc'), date, text: '', done: false, order, updated: now, deleted: false };
 }
 
+export function restoreScratchRow(row, text, now) {
+  return { ...row, text, deleted: false, updated: now };
+}
+
 export function carryToToday(row, today, now) {
   return [
     { ...row, done: true, updated: now },
