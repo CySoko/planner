@@ -97,7 +97,7 @@ function wkCard(it, context, editingId) {
     return `<div class="wk-card area-${esc(it.area)}${done ? ' done' : ''} editing">
       <form class="wk-pop" data-form="edit-item" data-id="${esc(it.id)}">
         <input class="wk-title-input" type="text" name="title" value="${esc(it.title)}" required>
-        <div class="wk-more" hidden>
+        <div class="wk-edit-more" hidden>
           <label class="wk-f">Date<input type="date" name="date" value="${esc(it.date || '')}" ${it.repeat === 'weekly' ? 'disabled' : ''}></label>
           ${it.repeat === 'weekly' ? '<p class="wk-note">Repeats weekly. Changes apply to every week.</p>' : ''}
           <label class="wk-f">Time<input type="time" name="time" value="${esc(it.time || '')}"></label>

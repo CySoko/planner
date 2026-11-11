@@ -130,8 +130,8 @@ textarea { font-size: 17px; resize: vertical; }
 .wk-edit:hover { color: var(--area); }
 @media (hover: none) { .wk-edit { opacity: .75; } .wk-star:not(.on) { opacity: .75; } }
 .wk-title-input { font-size: 14px; font-weight: 600; width: 100%; }
-.wk-more { display: flex; flex-direction: column; gap: 9px; }
-.wk-more[hidden] { display: none; }
+.wk-edit-more { display: flex; flex-direction: column; gap: 9px; }
+.wk-edit-more[hidden] { display: none; }
 .wk-edit-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .card-star { color: var(--btn); margin-right: 6px; }
 .wk-pop { display: flex; flex-direction: column; gap: 9px; animation: fadein .3s cubic-bezier(.2,.8,.2,1); }
