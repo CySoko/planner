@@ -205,3 +205,34 @@ export function clearDrafts(formType, formKey) {
 }
 export function clearAllDrafts() { for (const k of Object.keys(_drafts)) delete _drafts[k]; }
 export function _draftStoreForTest() { return _drafts; }
+
+// ---- Capture resolution ----
+// Combines parser guess, user overrides, and preset area into final capture fields.
+export function resolveCapture(guess, overrides, presetArea, groups) {
+  const g = guess || {};
+  const conf = g.confidence || {};
+  const title = overrides.title !== undefined ? overrides.title : (g.title || '');
+  const date = overrides.date !== undefined ? overrides.date : (g.date || '');
+  const time = overrides.time !== undefined ? overrides.time : (g.time || '');
+  const type = overrides.type || g.type || 'deadline';
+
+  let where;
+  if (overrides.where !== undefined) {
+    where = overrides.where;
+  } else if (conf.where === 'sure') {
+    where = (g.area || '') + '/' + (g.group || '');
+  } else if (presetArea) {
+    if (g.area === presetArea) {
+      where = g.area + '/' + (g.group || '');
+    } else {
+      const first = groups.find(gr => gr.area === presetArea);
+      where = first ? first.area + '/' + first.key : '';
+    }
+  } else if (g.area) {
+    where = g.area + '/' + (g.group || '');
+  } else {
+    where = '';
+  }
+
+  return { where, title, date, time, type };
+}

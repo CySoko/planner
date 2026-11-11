@@ -313,18 +313,18 @@ let capLastText = '';
 let capOverrides = {};
 let capGuess = null;
 let capExpanded = false;
+let capPreset = '';
 let toastTimer = null;
 let toastUndoId = null;
 
 function openPalette(presetArea) {
   const pal = $('#palette');
   if (pal.hidden) {
-    capLastText = ''; capOverrides = {}; capGuess = null; capExpanded = false;
+    capLastText = ''; capOverrides = {}; capGuess = null; capExpanded = false; capPreset = '';
     $('#capture').value = '';
   }
   if (presetArea) {
-    const first = allGroups(state.data.context).find(g => g.area === presetArea);
-    if (first) capOverrides.where = first.area + '/' + first.key;
+    capPreset = presetArea;
     capExpanded = false;
   }
   hideToast();
@@ -380,7 +380,11 @@ function previewCapture() {
     return;
   }
 
-  if (text !== capLastText) capOverrides = {};
+  if (text !== capLastText) {
+    const savedWhere = capOverrides.where;
+    capOverrides = {};
+    if (savedWhere !== undefined) capOverrides.where = savedWhere;
+  }
   capLastText = text;
 
   const g = safeParse(text, nowIso());
@@ -388,11 +392,12 @@ function previewCapture() {
   capGuess = g;
 
   const groups = allGroups(state.data.context);
-  const whereVal = capOverrides.where !== undefined ? capOverrides.where : (g.area ? g.area + '/' + g.group : '');
-  const titleVal = capOverrides.title !== undefined ? capOverrides.title : (g.title || '');
-  const dateVal = capOverrides.date !== undefined ? capOverrides.date : (g.date || '');
-  const timeVal = capOverrides.time !== undefined ? capOverrides.time : (g.time || '');
-  const typeVal = capOverrides.type || g.type || 'deadline';
+  const resolved = M.resolveCapture(g, capOverrides, capPreset, groups);
+  const whereVal = resolved.where;
+  const titleVal = resolved.title;
+  const dateVal = resolved.date;
+  const timeVal = resolved.time;
+  const typeVal = resolved.type;
 
   const [destArea, destGroup] = (whereVal || '').split('/');
   const destName = destGroup ? groupName(state.data.context, destGroup) : '';
@@ -444,15 +449,16 @@ function fileCapture() {
   const err = $('#capture-error');
   if (!text || !capGuess) { err.textContent = 'Type or dictate something first.'; err.hidden = false; return; }
 
-  const grid = document.querySelector('.cap-grid');
-  if (!grid) return;
-  const where = grid.querySelector('[name="cap-where"]').value;
+  snapshotCapGrid();
+  const groups = allGroups(state.data.context);
+  const resolved = M.resolveCapture(capGuess, capOverrides, capPreset, groups);
+  const where = resolved.where;
   if (!where) { err.textContent = 'Choose where this goes.'; err.hidden = false; return; }
 
-  const title = grid.querySelector('[name="cap-title"]').value.trim();
-  const date = grid.querySelector('[name="cap-date"]').value;
-  const time = grid.querySelector('[name="cap-time"]').value;
-  const type = grid.querySelector('[name="cap-type"]').value;
+  const title = resolved.title;
+  const date = resolved.date;
+  const time = resolved.time;
+  const type = resolved.type;
   const [area, group] = where.split('/');
   const now = nowIso();
 
@@ -601,7 +607,6 @@ document.addEventListener('click', (e) => {
   if (act === 'toggle-step') toggleStep(id);
   if (act === 'add-step') addStep(id);
   if (act === 'toggle-card') { state.ui.open[id] = !state.ui.open[id]; el.closest('.card').classList.toggle('open'); el.setAttribute('aria-expanded', String(!!state.ui.open[id])); }
-  if (act === 'toggle-add') { openPalette(el.dataset.area); }
   if (act === 'toggle-cap-expand') { snapshotCapGrid(); capExpanded = !capExpanded; previewCapture(); }
   if (act === 'dismiss') { const row = state.data.inbox.find(r => r.id === id); if (row) saveRows('Inbox', [M.dismissCapture(row)]); }
   if (act === 'accept-suggestion') acceptSuggestion(id);

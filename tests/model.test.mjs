@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { todayIso, addDays, quoteForDate, groupByDay, areaSummary, countdown, expandRepeats, isStalled, nextAction, applyItemEdit } from '../js/model.js';
+import { todayIso, addDays, quoteForDate, groupByDay, areaSummary, countdown, expandRepeats, isStalled, nextAction, applyItemEdit, resolveCapture } from '../js/model.js';
 
 const quotes = [{ text: 'A', active: true }, { text: 'B', active: true }, { text: 'C', active: false }];
 const item = (o) => ({ id: 'i', area: 'school', group: 'neuro', title: 'T', date: '', time: '', type: 'deadline', repeat: 'none', status: 'open', created: '2026-10-01T00:00:00-07:00', updated: '', ...o });
@@ -317,4 +317,49 @@ test('applyItemEdit ignores blank title', () => {
   const item = { id: 'it_3', title: 'Keep me', area: 'school', group: 'neuro', date: '', time: '', type: 'deadline', repeat: 'none', status: 'open', updated: '2026-11-01T10:00:00-07:00' };
   const edited = applyItemEdit(item, { title: '   ' }, '2026-11-09T12:00:00-07:00');
   assert.equal(edited.title, 'Keep me');
+});
+
+// ---- resolveCapture ----
+const groups = [
+  { area: 'school', key: 'neuro', name: 'Neuroscience' },
+  { area: 'school', key: 'genai', name: 'GenAI' },
+  { area: 'life', key: 'health', name: 'Health' },
+  { area: 'life', key: 'housing', name: 'Housing' },
+  { area: 'projects', key: 'plx', name: 'PLX' },
+];
+
+test('resolveCapture: overrides win over everything', () => {
+  const guess = { title: 'Guess title', area: 'school', group: 'neuro', date: '2026-11-05', time: '09:00', type: 'event', confidence: { where: 'sure' } };
+  const overrides = { where: 'life/health', title: 'Override title', date: '2026-12-01', time: '14:00', type: 'do-date' };
+  const r = resolveCapture(guess, overrides, 'school', groups);
+  assert.equal(r.where, 'life/health');
+  assert.equal(r.title, 'Override title');
+  assert.equal(r.date, '2026-12-01');
+  assert.equal(r.time, '14:00');
+  assert.equal(r.type, 'do-date');
+});
+
+test('resolveCapture: a sure where guess beats the preset', () => {
+  const guess = { title: 'Reading', area: 'school', group: 'neuro', date: '', time: '', type: 'deadline', confidence: { where: 'sure' } };
+  const r = resolveCapture(guess, {}, 'life', groups);
+  assert.equal(r.where, 'school/neuro');
+});
+
+test('resolveCapture: unsure guess in a different area falls back to preset area first group', () => {
+  const guess = { title: 'Buy tape', area: 'projects', group: 'plx', date: '', time: '', type: 'deadline', confidence: { where: 'unsure' } };
+  const r = resolveCapture(guess, {}, 'life', groups);
+  assert.equal(r.where, 'life/health');
+});
+
+test('resolveCapture: unsure guess in the preset area keeps its guessed group', () => {
+  const guess = { title: 'Rent', area: 'life', group: 'housing', date: '', time: '', type: 'deadline', confidence: { where: 'unsure' } };
+  const r = resolveCapture(guess, {}, 'life', groups);
+  assert.equal(r.where, 'life/housing');
+});
+
+test('resolveCapture: no preset and no guess gives empty where', () => {
+  const guess = { title: 'Random', area: '', group: '', date: '', time: '', type: '', confidence: {} };
+  const r = resolveCapture(guess, {}, '', groups);
+  assert.equal(r.where, '');
+  assert.equal(r.type, 'deadline');
 });
