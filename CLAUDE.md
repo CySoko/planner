@@ -2,6 +2,7 @@
 
 Cy's personal planner. Plain HTML/CSS/ES modules, no build step, served by GitHub Pages at cysoko.github.io/planner. Data lives in the Google Sheet "SOKOGEN Planner (Live)" via a bound Apps Script web app.
 Spec: `docs/superpowers/specs/2026-11-02-sokogen-planner-design.md` · Plan: `docs/superpowers/plans/2026-11-02-sokogen-planner.md`
+North Star: `docs/north-star.md` · Design Brief: `docs/design-brief.md` · Gap List: `docs/gap-list.md`
 
 ## How Cy works
 - He previews with VS Code Live Server. Never launch a browser, take screenshots or start a server unless he asks. Make the change, say what changed, stop.
