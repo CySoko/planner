@@ -54,5 +54,18 @@
   { "text": "rent due 1st", "now": "2026-11-02T20:15:00-07:00",
     "expect": { "group": "housing", "date": "2026-12-01", "type": "deadline" } },
   { "text": "next week neuro quiz", "now": "2026-11-02T20:15:00-07:00",
-    "expect": { "group": "neuro", "date": "2026-11-09", "confidence": { "when": "unsure" } } }
+    "expect": { "group": "neuro", "date": "2026-11-09", "confidence": { "when": "unsure" } } },
+  { "text": "neuro reading due yesterday", "now": "2026-11-04T12:00:00-07:00",
+    "expect": { "title": "Neuro reading", "group": "neuro", "date": "2026-11-03", "type": "deadline",
+                "confidence": { "when": "sure", "type": "sure" } } },
+  { "text": "paper due last friday", "now": "2026-11-04T12:00:00-07:00",
+    "expect": { "title": "Paper", "date": "2026-10-30", "type": "deadline",
+                "confidence": { "when": "sure", "type": "sure" } } },
+  { "text": "last wednesday", "now": "2026-11-04T12:00:00-07:00",
+    "expect": { "date": "2026-10-28", "confidence": { "when": "sure" } } },
+  { "text": "submitted 3 days ago", "now": "2026-11-04T12:00:00-07:00",
+    "expect": { "title": "Submitted", "date": "2026-11-01", "type": "deadline",
+                "confidence": { "when": "sure" } } },
+  { "text": "a week ago", "now": "2026-11-04T12:00:00-07:00",
+    "expect": { "date": "2026-10-28", "confidence": { "when": "sure" } } }
 ]

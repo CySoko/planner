@@ -73,6 +73,15 @@ function parseCapture(text, context, nowIso, openItems) {
     [LEAD_ + '(\\d{1,2})(?:st|nd|rd|th)? (?:of )?(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\\b', m => ({ date: nextMonthDay_(today, MONTH_ABBR_.indexOf(m[2]) + 1, Number(m[1])) })],
     [LEAD_ + '(\\d{1,2})/(\\d{1,2})\\b', m => ({ date: nextMonthDay_(today, Number(m[1]), Number(m[2])) })],
     [LEAD_ + '(\\d{1,2})(?:st|nd|rd|th)\\b', m => ({ date: nextDayOfMonth_(today, Number(m[1])) })],
+    [LEAD_ + 'yesterday\\b', () => ({ date: addDays_(today, -1) })],
+    [LEAD_ + 'last ' + WD_ALT_ + '\\b', m => {
+      const back = ((dow - weekdayIndex_(m[1]) + 7) % 7) || 7;
+      return { date: addDays_(today, -back) };
+    }],
+    [LEAD_ + '(\\d+|a|an|one|two|three|four|five|six|seven|eight|nine|ten) (day|days|week|weeks) ago\\b', m => {
+      const n = /^\d+$/.test(m[1]) ? Number(m[1]) : NUMBER_WORDS_[m[1]];
+      return { date: addDays_(today, -(m[2].startsWith('week') ? n * 7 : n)) };
+    }],
     [LEAD_ + 'next ' + WD_ALT_ + '\\b', m => {
       const coming = ((weekdayIndex_(m[1]) - dow + 7) % 7) || 7;
       return { date: addDays_(today, coming + 7), unsure: true, alt: addDays_(today, coming) };
