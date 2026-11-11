@@ -61,6 +61,7 @@ textarea { font-size: 17px; resize: vertical; }
 .cap-summary { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .cap-summary-text { font-size: 14px; color: var(--muted); flex: 1; min-width: 0; }
 .cap-foot { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; margin-top: 4px; }
+.cap-pending { color: var(--unsure); }
 .error { color: var(--school); margin: 0; font-size: 13px; }
 
 /* always remember */

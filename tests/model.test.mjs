@@ -345,10 +345,18 @@ test('resolveCapture: a sure where guess beats the preset', () => {
   assert.equal(r.where, 'school/neuro');
 });
 
-test('resolveCapture: unsure guess in a different area falls back to preset area first group', () => {
+test('resolveCapture: unsure guess in a different area gives empty where and pendingArea', () => {
   const guess = { title: 'Buy tape', area: 'projects', group: 'plx', date: '', time: '', type: 'deadline', confidence: { where: 'unsure' } };
   const r = resolveCapture(guess, {}, 'life', groups);
-  assert.equal(r.where, 'life/health');
+  assert.equal(r.where, '');
+  assert.equal(r.pendingArea, 'life');
+});
+
+test('resolveCapture: no guess at all plus preset gives empty where and pendingArea', () => {
+  const guess = { title: 'Random thing', area: '', group: '', date: '', time: '', type: '', confidence: {} };
+  const r = resolveCapture(guess, {}, 'school', groups);
+  assert.equal(r.where, '');
+  assert.equal(r.pendingArea, 'school');
 });
 
 test('resolveCapture: unsure guess in the preset area keeps its guessed group', () => {

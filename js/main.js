@@ -393,11 +393,17 @@ function previewCapture() {
 
   const [destArea, destGroup] = (whereVal || '').split('/');
   const destName = destGroup ? groupName(state.data.context, destGroup) : '';
-  const destLabel = destArea ? `add to ${destName}` : 'choose where';
+  const pending = resolved.pendingArea;
+  const destLabel = destArea ? `add to ${destName}` : (pending ? 'pick where' : 'choose where');
 
   // Compact summary (default) vs full grid (expanded)
   const summaryParts = [];
-  if (destArea) summaryParts.push(`${esc(AREA_LABEL[destArea])} \u00b7 ${esc(destName)}`);
+  if (destArea) {
+    summaryParts.push(`${esc(AREA_LABEL[destArea])} \u00b7 ${esc(destName)}`);
+  } else if (pending) {
+    const hint = pending === 'school' ? 'pick a class' : pending === 'life' ? 'pick a part of life' : 'pick a project';
+    summaryParts.push(`${esc(AREA_LABEL[pending])} \u00b7 <span class="cap-pending">${esc(hint)}</span>`);
+  }
   if (dateVal) summaryParts.push(esc(shortDate(dateVal)));
   summaryParts.push(esc(typeVal));
   const summaryLine = summaryParts.join(' \u00a0\u2022\u00a0 ');
@@ -411,7 +417,7 @@ function previewCapture() {
       <div class="cap-foot">
         <button class="btn" data-act="close-palette">esc</button>
         <button class="btn" data-act="send-capture">inbox instead</button>
-        <button class="btn primary" data-act="file-capture" ${!whereVal ? 'disabled' : ''}>${esc(destLabel)} \u21b5</button>
+        <button class="btn primary" data-act="file-capture" ${!whereVal && !pending ? 'disabled' : ''}>${esc(destLabel)} \u21b5</button>
       </div>`;
     return;
   }
@@ -444,6 +450,13 @@ function fileCapture() {
   const groups = allGroups(state.data.context);
   const resolved = M.resolveCapture(capGuess, capOverrides, capPreset, groups);
   const where = resolved.where;
+  if (!where && !capExpanded) {
+    capExpanded = true;
+    previewCapture();
+    const sel = document.querySelector('[name="cap-where"]');
+    if (sel) sel.focus();
+    return;
+  }
   if (!where) { err.textContent = 'Choose where this goes.'; err.hidden = false; return; }
 
   const title = resolved.title;

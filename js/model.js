@@ -216,7 +216,7 @@ export function resolveCapture(guess, overrides, presetArea, groups) {
   const time = overrides.time !== undefined ? overrides.time : (g.time || '');
   const type = overrides.type || g.type || 'deadline';
 
-  let where;
+  let where, pendingArea = '';
   if (overrides.where !== undefined) {
     where = overrides.where;
   } else if (conf.where === 'sure') {
@@ -225,8 +225,8 @@ export function resolveCapture(guess, overrides, presetArea, groups) {
     if (g.area === presetArea) {
       where = g.area + '/' + (g.group || '');
     } else {
-      const first = groups.find(gr => gr.area === presetArea);
-      where = first ? first.area + '/' + first.key : '';
+      where = '';
+      pendingArea = presetArea;
     }
   } else if (g.area) {
     where = g.area + '/' + (g.group || '');
@@ -234,5 +234,5 @@ export function resolveCapture(guess, overrides, presetArea, groups) {
     where = '';
   }
 
-  return { where, title, date, time, type };
+  return { where, pendingArea, title, date, time, type };
 }
