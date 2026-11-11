@@ -126,6 +126,9 @@ button.wk-title:focus-visible { outline: none; }
 .wk-add { width: 100%; margin-top: 8px; padding: 6px; border: 1px dashed var(--line); border-radius: 10px; background: none; color: var(--muted); font-size: 12px; cursor: pointer; transition: border-color .2s, color .2s; }
 .wk-add:hover, .wk-add:focus-visible { border-color: var(--line-strong); color: var(--text); }
 .wk-more { font-size: 11px; color: var(--muted); font-weight: 400; }
+.wk-step { cursor: default; }
+.wk-parent { align-self: flex-start; background: none; border: 0; padding: 0; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--area); cursor: pointer; text-align: left; overflow-wrap: anywhere; }
+.wk-parent:hover { text-decoration: underline; }
 .wk-card.editing { border-color: var(--area); z-index: 5; transform: none; }
 .wk-tools { display: inline-flex; gap: 6px; align-items: center; }
 @media (hover: none) { .wk-star:not(.on) { opacity: .75; } }

@@ -8,7 +8,7 @@ export function renderLanding(state, today, nowIso) {
   const scratchHtml = renderScratch(scratchForDate(scratch || [], scratchDate), scratchDate, today);
   const q = quoteForDate(today, quotes);
   const days = groupByDay(items, steps, today, 7);
-  const weekItems = days.flatMap(d => d.items);
+  const weekItems = days.flatMap(d => d.items).filter(i => i.kind !== 'step');
   const seen = new Set();
   const weekOpen = weekItems.filter(i => i.status !== 'done' && !seen.has(i.id) && seen.add(i.id));
   const newInbox = inbox.filter(r => r.status === 'new').length;
@@ -17,7 +17,7 @@ export function renderLanding(state, today, nowIso) {
   const colHtml = days.map(d => `
     <div class="wk-col${d.today ? ' is-today' : ''}">
       <div class="wk-head"><span class="wd">${d.weekday}</span><span class="num">${d.num}</span></div>
-      ${d.items.length ? `<div class="wk-items">${d.items.map(it => wkCard(it, context, state.ui.editing)).join('')}</div>` : (d.today ? '<div class="wk-empty">Nothing due today.</div>' : '')}
+      ${d.items.length ? `<div class="wk-items">${d.items.map(it => it.kind === 'step' ? wkStepCard(it) : wkCard(it, context, state.ui.editing)).join('')}</div>` : (d.today ? '<div class="wk-empty">Nothing due today.</div>' : '')}
       <button class="wk-add" data-act="open-palette" data-date="${d.date}">+ add</button>
     </div>`).join('');
 
@@ -67,6 +67,18 @@ export function renderLanding(state, today, nowIso) {
         <div class="stat"><div class="n" style="color:var(--stalled)">${stalled}</div><div class="l">stalled</div></div>
       </section>
     </aside>
+  </div>`;
+}
+
+function wkStepCard(s) {
+  const done = s.done === true;
+  const box = check(done, 'toggle-step', s.id, s.text, s.area);
+  const label = s.overdue ? { text: 'OVERDUE', cls: 'overdue' } : null;
+  return `<div class="wk-card wk-step area-${esc(s.area)}${done ? ' done' : ''}">
+    <div class="wk-row">${box}<div class="wk-body">
+      <div class="wk-title">${esc(s.text)}</div>
+      <button class="wk-parent" data-act="open-parent" data-id="${esc(s.itemId)}" data-area="${esc(s.area)}">↳ ${esc(s.parentTitle)}</button>
+    </div></div>${label ? `\n    <div class="wk-foot"><span class="wk-tools"></span><span class="time ${label.cls}">${esc(label.text)}</span></div>` : ''}
   </div>`;
 }
 

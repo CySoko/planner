@@ -535,6 +535,74 @@ test('groupByDay: starred overdue item appears in today once, not duplicated', (
   assert.equal(days[0].items[0].overdue, true);
 });
 
+// ---- Dated steps in groupByDay ----
+test('groupByDay: a dated step appears on its day with parentTitle and area from parent', () => {
+  const items = [item({ id: 'p1', area: 'school', group: 'neuro', title: 'Read chapter', date: '2026-11-05' })];
+  const steps = [step({ id: 'st1', itemId: 'p1', text: 'Pages 1-20', date: '2026-11-04', order: 1 })];
+  const days = groupByDay(items, steps, '2026-11-02');
+  const wed = days[2]; // Nov 4
+  const entry = wed.items.find(e => e.id === 'st1');
+  assert.ok(entry, 'step should appear on Nov 4');
+  assert.equal(entry.kind, 'step');
+  assert.equal(entry.parentTitle, 'Read chapter');
+  assert.equal(entry.area, 'school');
+});
+
+test('groupByDay: step whose parent is done does not appear', () => {
+  const items = [item({ id: 'p2', area: 'school', title: 'Done task', date: '2026-11-05', status: 'done' })];
+  const steps = [step({ id: 'st2', itemId: 'p2', text: 'Sub', date: '2026-11-04', order: 1 })];
+  const days = groupByDay(items, steps, '2026-11-02');
+  const allIds = days.flatMap(d => d.items.map(i => i.id));
+  assert.ok(!allIds.includes('st2'));
+});
+
+test('groupByDay: overdue open step moves to today flagged overdue', () => {
+  const items = [item({ id: 'p3', area: 'life', title: 'Task', date: '2026-11-05' })];
+  const steps = [step({ id: 'st3', itemId: 'p3', text: 'Old step', date: '2026-10-30', order: 1, done: false })];
+  const days = groupByDay(items, steps, '2026-11-02');
+  const todayEntry = days[0].items.find(e => e.id === 'st3');
+  assert.ok(todayEntry, 'overdue step should move to today');
+  assert.equal(todayEntry.overdue, true);
+});
+
+test('groupByDay: done step dated before today does not appear', () => {
+  const items = [item({ id: 'p4', area: 'school', title: 'Task', date: '2026-11-05' })];
+  const steps = [step({ id: 'st4', itemId: 'p4', text: 'Past done', date: '2026-10-30', order: 1, done: true })];
+  const days = groupByDay(items, steps, '2026-11-02');
+  const allIds = days.flatMap(d => d.items.map(i => i.id));
+  assert.ok(!allIds.includes('st4'));
+});
+
+test('groupByDay: done step inside the window stays on its day after open entries', () => {
+  const items = [item({ id: 'p5', area: 'school', group: 'neuro', title: 'Task', date: '2026-11-04', created: '2026-10-01T00:00:00-07:00' })];
+  const steps = [
+    step({ id: 'st5a', itemId: 'p5', text: 'Open step', date: '2026-11-04', order: 1, done: false }),
+    step({ id: 'st5b', itemId: 'p5', text: 'Done step', date: '2026-11-04', order: 2, done: true }),
+  ];
+  const days = groupByDay(items, steps, '2026-11-02');
+  const wed = days[2]; // Nov 4
+  const ids = wed.items.map(i => i.id);
+  assert.ok(ids.indexOf('st5a') < ids.indexOf('st5b'), 'open step before done step');
+});
+
+test('groupByDay: undated steps never appear', () => {
+  const items = [item({ id: 'p6', area: 'school', title: 'Task', date: '2026-11-05' })];
+  const steps = [step({ id: 'st6', itemId: 'p6', text: 'No date', date: '', order: 1 })];
+  const days = groupByDay(items, steps, '2026-11-02');
+  const allIds = days.flatMap(d => d.items.map(i => i.id));
+  assert.ok(!allIds.includes('st6'));
+});
+
+test('groupByDay today: open step sorts after its area untimed items', () => {
+  const items = [
+    item({ id: 'p7', area: 'school', group: 'neuro', title: 'Task', date: '2026-11-02', created: '2026-10-01T00:00:00-07:00' }),
+  ];
+  const steps = [step({ id: 'st7', itemId: 'p7', text: 'Step', date: '2026-11-02', order: 1, done: false })];
+  const days = groupByDay(items, steps, '2026-11-02');
+  const todayIds = days[0].items.map(i => i.id);
+  assert.ok(todayIds.indexOf('p7') < todayIds.indexOf('st7'), 'item before its step');
+});
+
 test('resolveCapture: no preset and no guess gives empty where', () => {
   const guess = { title: 'Random', area: '', group: '', date: '', time: '', type: '', confidence: {} };
   const r = resolveCapture(guess, {}, '', groups);

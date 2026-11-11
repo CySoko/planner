@@ -650,6 +650,7 @@ document.addEventListener('click', (e) => {
   if (act === 'add-step') addStep(id);
   if (act === 'clear-step-date') { const s = state.data.steps.find(x => x.id === id); if (s) saveRows('Steps', [{ ...s, date: '', updated: nowIso() }]); }
   if (act === 'toggle-card') { state.ui.open[id] = !state.ui.open[id]; el.closest('.card').classList.toggle('open'); el.setAttribute('aria-expanded', String(!!state.ui.open[id])); }
+  if (act === 'open-parent') { state.ui.open[id] = true; location.hash = '#/' + el.dataset.area; render(); }
   if (act === 'toggle-cap-expand') { capExpanded = !capExpanded; previewCapture(); }
   if (act === 'dismiss') {
     const row = state.data.inbox.find(r => r.id === id);

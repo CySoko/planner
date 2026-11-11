@@ -46,17 +46,35 @@ export function groupByDay(items, steps, today, days = 7) {
     !(i.date && i.date <= today)  // not already in today (overdue or today-dated)
   ).map(i => ({ ...i, pinnedFrom: i.date || '', date: today }));
 
+  // Dated steps whose parent is open
+  const parentMap = new Map(items.map(i => [i.id, i]));
+  const stepEntries = (steps || []).filter(s => {
+    if (!s.date) return false;
+    const p = parentMap.get(s.itemId);
+    return p && isOpen(p);
+  }).map(s => {
+    const p = parentMap.get(s.itemId);
+    const done = s.done === true;
+    if (done && s.date < today) return null; // done step dated before today: skip
+    const moved = !done && s.date < today;
+    return { kind: 'step', id: s.id, itemId: s.itemId, text: s.text, done, date: moved ? today : s.date, order: Number(s.order) || 0, parentTitle: p.title, area: p.area, group: p.group, overdue: moved || undefined };
+  }).filter(Boolean);
+
   const all = openMapped.concat(doneSingle).concat(expandRepeats(items, today, days)).concat(starredPins);
   return Array.from({ length: days }, (_, k) => {
     const date = addDays(today, k);
-    const dayItems = all.filter(i => i.date === date && i.date <= end)
+    const dayItems = all.filter(i => i.date === date && i.date <= end);
+    const daySteps = stepEntries.filter(s => s.date === date && s.date <= end);
+    const combined = dayItems.concat(daySteps)
       .sort((a, b) => {
-        const aDone = a.status === 'done' ? 1 : 0;
-        const bDone = b.status === 'done' ? 1 : 0;
+        const aDone = (a.kind === 'step' ? a.done : a.status === 'done') ? 1 : 0;
+        const bDone = (b.kind === 'step' ? b.done : b.status === 'done') ? 1 : 0;
         if (aDone !== bDone) return aDone - bDone;
         if (k === 0) {
-          const aStarred = (a.starred && !aDone) ? 0 : 1;
-          const bStarred = (b.starred && !bDone) ? 0 : 1;
+          const aStep = a.kind === 'step' ? 1 : 0;
+          const bStep = b.kind === 'step' ? 1 : 0;
+          const aStarred = (a.starred && !aDone && !aStep) ? 0 : 1;
+          const bStarred = (b.starred && !bDone && !bStep) ? 0 : 1;
           if (aStarred !== bStarred) return aStarred - bStarred;
           const aArea = AREA_ORDER[a.area] ?? 9;
           const bArea = AREA_ORDER[b.area] ?? 9;
@@ -65,13 +83,16 @@ export function groupByDay(items, steps, today, days = 7) {
           const bHasTime = b.time ? 0 : 1;
           if (aHasTime !== bHasTime) return aHasTime - bHasTime;
           if (a.time && b.time) return a.time.localeCompare(b.time);
+          // Steps sort after untimed items of their area
+          if (aStep !== bStep) return aStep - bStep;
+          if (aStep && bStep) return a.order - b.order;
           if (!a.time && !b.time) return (a.created || '').localeCompare(b.created || '') || (a.id || '').localeCompare(b.id || '');
           return 0;
         }
         if (!aDone) return (b.overdue ? 1 : 0) - (a.overdue ? 1 : 0) || (a.time || '99:99').localeCompare(b.time || '99:99');
         return (a.time || '99:99').localeCompare(b.time || '99:99');
       });
-    return { date, weekday: weekdayOf(date), num: date.slice(8), today: k === 0, items: dayItems };
+    return { date, weekday: weekdayOf(date), num: date.slice(8), today: k === 0, items: combined };
   });
 }
 
