@@ -358,11 +358,17 @@ function showToast(html) {
   const el = $('#toast');
   el.innerHTML = html;
   el.hidden = false;
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('visible')));
   toastTimer = setTimeout(hideToast, 8000);
 }
 function hideToast() {
   clearTimeout(toastTimer);
-  $('#toast').hidden = true;
+  const el = $('#toast');
+  el.classList.remove('visible');
+  const done = () => { el.hidden = true; el.removeEventListener('transitionend', done); };
+  el.addEventListener('transitionend', done);
+  // Fallback if reduced-motion kills the transition
+  setTimeout(() => { if (!el.hidden) { el.hidden = true; el.removeEventListener('transitionend', done); } }, 300);
   toastUndo = null;
 }
 function undoToast() {
