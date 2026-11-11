@@ -113,7 +113,11 @@ textarea { font-size: 17px; resize: vertical; }
 .wk-title { font-size: 13px; font-weight: 600; line-height: 1.28; letter-spacing: -.005em; overflow-wrap: anywhere; }
 .wk-card.done .wk-title { color: var(--dim); text-decoration: line-through; }
 .wk-meta { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); overflow-wrap: anywhere; }
-.wk-card .time { align-self: flex-end; margin-top: 0; font-size: 9px; padding: 1px 5px; border-radius: 6px; }
+.wk-foot { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.wk-star { width: 22px; height: 22px; border: 0; background: none; color: var(--muted); cursor: pointer; padding: 0; opacity: 0; transition: opacity .25s; }
+.wk-card:hover .wk-star, .wk-card:focus-within .wk-star, .wk-star.on { opacity: 1; }
+.wk-star.on { color: var(--btn); }
+.wk-card .time { margin-left: auto; margin-top: 0; font-size: 9px; padding: 1px 5px; border-radius: 6px; }
 .wk-card .time.do { border-style: dashed; }
 .wk-empty { color: var(--dim); font-size: 13px; text-align: center; padding: 10px 0; border: 1px dashed var(--line); border-radius: 12px; }
 .wk-more { font-size: 11px; color: var(--muted); font-weight: 400; }
@@ -121,7 +125,8 @@ textarea { font-size: 17px; resize: vertical; }
 .wk-edit { position: absolute; top: 6px; right: 6px; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--panel-solid); color: var(--text); cursor: pointer; opacity: 0; transition: opacity .25s, border-color .25s; }
 .wk-card:hover .wk-edit, .wk-card:focus-within .wk-edit, .wk-card.editing .wk-edit { opacity: 1; }
 .wk-edit:hover { border-color: var(--area); color: var(--area); }
-@media (hover: none) { .wk-edit { opacity: .75; } }
+@media (hover: none) { .wk-edit { opacity: .75; } .wk-star:not(.on) { opacity: .75; } }
+.card-star { color: var(--btn); margin-right: 6px; }
 .wk-pop { display: flex; flex-direction: column; gap: 9px; margin-top: 4px; padding-top: 10px; border-top: 1px solid var(--line); animation: fadein .3s cubic-bezier(.2,.8,.2,1); }
 .wk-pop-head { display: flex; justify-content: space-between; align-items: baseline; }
 .wk-pop-head .h2 { font-size: 20px; }

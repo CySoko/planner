@@ -636,6 +636,7 @@ document.addEventListener('click', (e) => {
   if (act === 'close-palette') closePalette();
   if (act === 'send-capture') sendCapture();
   if (act === 'file-capture') fileCapture();
+  if (act === 'toggle-star') { const it = state.data.items.find(i => i.id === id); if (it) saveRows('Items', [{ ...it, starred: !it.starred, updated: nowIso() }]); }
   if (act === 'toggle-item') toggleItem(id);
   if (act === 'toggle-step') toggleStep(id);
   if (act === 'add-step') addStep(id);

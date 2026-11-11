@@ -68,7 +68,7 @@ function card(it, state, today) {
     <button class="card-head" data-act="toggle-card" data-id="${esc(it.id)}" aria-expanded="${isOpenCard}">
       ${block}
       <div class="card-main">
-        <div class="card-title-row"><span class="chev" aria-hidden="true">▸</span><span class="card-title">${esc(it.title)}</span>
+        <div class="card-title-row"><span class="chev" aria-hidden="true">▸</span>${it.starred ? '<span class="card-star" aria-hidden="true">\u2605</span>' : ''}<span class="card-title">${esc(it.title)}</span>
           <span class="countdown ${cdCls}">${esc(it.repeat === 'weekly' ? 'weekly' : cd)}</span>${t && t.text !== 'DUE' ? `<span class="time ${t.cls}">${esc(t.text)}</span>` : ''}</div>
         <div class="progress"><div class="bar"><span style="width:${pct}%"></span></div><span class="n">${done}/${steps.length}</span></div>
       </div>
@@ -77,7 +77,7 @@ function card(it, state, today) {
       ${steps.map(s => `<div class="step ${s.done === true ? 'done' : ''}">${check(s.done === true, 'toggle-step', s.id, s.text, it.area)}<span class="step-text">${esc(s.text)}</span></div>`).join('')}
       <div class="add-row"><input type="text" placeholder="add step…" aria-label="Add a step to ${esc(it.title)}" data-step-input="${esc(it.id)}">
         <button class="btn small" data-act="add-step" data-id="${esc(it.id)}">+ add step</button></div>
-      <div class="card-actions"><button class="btn small" data-act="toggle-item" data-id="${esc(it.id)}">Mark done</button></div>
+      <div class="card-actions"><button class="btn small" data-act="toggle-star" data-id="${esc(it.id)}">${it.starred ? '\u2605 Starred' : '\u2606 Star'}</button><button class="btn small" data-act="toggle-item" data-id="${esc(it.id)}">Mark done</button></div>
     </div></div></div>
   </article>`;
 }
