@@ -124,6 +124,7 @@ export function acceptSuggestion(inboxRow, suggestionItems, now) {
 }
 
 export function dismissCapture(inboxRow) { return { ...inboxRow, status: 'dismissed' }; }
+export function undismissCapture(inboxRow) { return { ...inboxRow, status: 'new' }; }
 
 export function buildSyntheticInboxRow(text, guess, now) {
   return {

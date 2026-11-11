@@ -94,7 +94,7 @@ test('addDays crosses month ends', () => {
   assert.equal(addDays('2026-11-30', 1), '2026-12-01');
 });
 
-import { acceptCapture, acceptSuggestion, dismissCapture, buildSyntheticInboxRow } from '../js/model.js';
+import { acceptCapture, acceptSuggestion, dismissCapture, undismissCapture, buildSyntheticInboxRow } from '../js/model.js';
 
 const NOW = '2026-11-02T20:15:00-07:00';
 const inbox = {
@@ -148,6 +148,15 @@ test('acceptSuggestion: a Claude suggestion with 3 items creates 3 Items', () =>
 
 test('dismissCapture marks the inbox row dismissed and files nothing', () => {
   assert.equal(dismissCapture(inbox).status, 'dismissed');
+});
+
+test('undismissCapture restores status to new', () => {
+  const dismissed = dismissCapture(inbox);
+  assert.equal(dismissed.status, 'dismissed');
+  const restored = undismissCapture(dismissed);
+  assert.equal(restored.status, 'new');
+  assert.equal(restored.id, inbox.id);
+  assert.equal(restored.text, inbox.text);
 });
 
 test('buildSyntheticInboxRow maps parse guess fields and generates an id', () => {

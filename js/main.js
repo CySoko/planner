@@ -629,7 +629,17 @@ document.addEventListener('click', (e) => {
   if (act === 'add-step') addStep(id);
   if (act === 'toggle-card') { state.ui.open[id] = !state.ui.open[id]; el.closest('.card').classList.toggle('open'); el.setAttribute('aria-expanded', String(!!state.ui.open[id])); }
   if (act === 'toggle-cap-expand') { capExpanded = !capExpanded; previewCapture(); }
-  if (act === 'dismiss') { const row = state.data.inbox.find(r => r.id === id); if (row) saveRows('Inbox', [M.dismissCapture(row)]); }
+  if (act === 'dismiss') {
+    const row = state.data.inbox.find(r => r.id === id);
+    if (row) {
+      saveRows('Inbox', [M.dismissCapture(row)]);
+      toastUndo = () => {
+        const fresh = state.data.inbox.find(r => r.id === id);
+        if (fresh) saveRows('Inbox', [M.undismissCapture(fresh)]);
+      };
+      showToast('<span>Dismissed</span><button class="toast-btn" data-act="undo-toast">undo</button><button class="toast-btn" data-act="dismiss-toast" aria-label="Dismiss">\u2715</button>');
+    }
+  }
   if (act === 'accept-suggestion') acceptSuggestion(id);
   if (act === 'use-alt') {
     const field = el.closest('form').querySelector(`[name="${el.dataset.field}"]`);
