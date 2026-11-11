@@ -1,5 +1,5 @@
 import { groupByDay, areaSummary, quoteForDate, isStalled, scratchForDate, weekdayOf } from '../model.js';
-import { esc, AREAS, AREA_LABEL, groupName, allGroups, groupsFor, shortDate, check } from './ui.js';
+import { esc, AREAS, AREA_LABEL, groupName, allGroups, groupsFor, shortDate, check, editItemForm } from './ui.js';
 import { renderScratch } from './scratch.js';
 
 export function renderLanding(state, today, nowIso) {
@@ -91,21 +91,9 @@ function wkCard(it, context, editingId) {
   const editing = editingId === it.id;
   const label = wkLabel(it);
   const shortGroup = groupName(context, it.group).split(' \u00b7 ')[0];
-  const groups = allGroups(context);
   if (editing) {
     return `<div class="wk-card area-${esc(it.area)}${done ? ' done' : ''} editing">
-      <form class="wk-pop" data-form="edit-item" data-id="${esc(it.id)}">
-        <input class="wk-title-input" type="text" name="title" value="${esc(it.title)}" required>
-        <textarea class="wk-desc-input" name="notes" rows="2" placeholder="description (optional)">${esc(it.notes || '')}</textarea>
-        <div class="wk-edit-more" hidden>
-          <label class="wk-f">Date<input type="date" name="date" value="${esc(it.date || '')}" ${it.repeat === 'weekly' ? 'disabled' : ''}></label>
-          ${it.repeat === 'weekly' ? '<p class="wk-note">Repeats weekly. Changes apply to every week.</p>' : ''}
-          <label class="wk-f">Time<input type="time" name="time" value="${esc(it.time || '')}"></label>
-          <label class="wk-f">Type<select name="type">${['deadline', 'event', 'do-date'].map(t => `<option ${t === it.type ? 'selected' : ''}>${t}</option>`).join('')}</select></label>
-          <label class="wk-f">Where<select name="where">${groups.map(g => `<option value="${esc(g.area + '/' + g.key)}" ${g.area === it.area && g.key === it.group ? 'selected' : ''}>${esc(AREA_LABEL[g.area])} \u00b7 ${esc(g.name)}</option>`).join('')}</select></label>
-        </div>
-        <div class="wk-edit-foot"><button type="button" class="btn small" data-act="toggle-edit-more">more \u25b8</button><div class="row-end"><button type="button" class="btn small" data-act="edit-item" data-id="${esc(it.id)}">esc</button><button type="submit" class="btn small primary">save \u21b5</button></div></div>
-      </form>
+      ${editItemForm(it, context)}
     </div>`;
   }
   const box = it.occurrence ? '<span></span>' : check(done, 'toggle-item', it.id, it.title, it.area);

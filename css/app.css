@@ -206,6 +206,7 @@ button.wk-title:focus-visible { outline: none; }
 .open .card-body { grid-template-rows: 1fr; }
 .card-body > div { overflow: hidden; }
 .card-inner { padding: 4px 20px 18px 88px; border-top: 1px solid var(--line); }
+.card-inner > .wk-pop { margin: 0 0 14px; padding-top: 0; border-top: 0; }
 .step { display: grid; grid-template-columns: 34px minmax(0, 1fr); align-items: center; min-height: 46px; border-radius: 8px; padding-left: 4px; }
 .step:hover { background: var(--hover); }
 .step-text { font-size: 16px; }

@@ -670,7 +670,7 @@ document.addEventListener('click', (e) => {
   if (act === 'undo-toast') undoToast();
   if (act === 'dismiss-toast') hideToast();
   if (act === 'toggle-edit-more') { const more = el.closest('form').querySelector('.wk-edit-more'); more.hidden = !more.hidden; el.textContent = more.hidden ? 'more \u25b8' : '\u25c2 less'; }
-  if (act === 'edit-item') { state.ui.editing = state.ui.editing === id ? null : id; render(); if (state.ui.editing) { const ti = document.querySelector('.wk-title-input'); if (ti) { ti.focus(); ti.setSelectionRange(ti.value.length, ti.value.length); } } }
+  if (act === 'edit-item') { state.ui.editing = state.ui.editing === id ? null : id; if (state.ui.editing) state.ui.open[id] = true; render(); if (state.ui.editing) { const ti = document.querySelector('.wk-title-input'); if (ti) { ti.focus(); ti.setSelectionRange(ti.value.length, ti.value.length); } } }
   if (act === 'scratch-prev') {
     state.ui.scratchDate = M.addDays(state.ui.scratchDate || M.todayIso(), -1);
     redrawScratch();
