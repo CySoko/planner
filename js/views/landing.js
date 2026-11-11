@@ -91,7 +91,6 @@ function wkCard(it, context, editingId) {
   const editing = editingId === it.id;
   const label = wkLabel(it);
   const shortGroup = groupName(context, it.group).split(' \u00b7 ')[0];
-  const pencil = `<button class="wk-edit" data-act="edit-item" data-id="${esc(it.id)}" aria-label="Edit ${esc(it.title)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>`;
   const groups = allGroups(context);
   if (editing) {
     return `<div class="wk-card area-${esc(it.area)}${done ? ' done' : ''} editing">
@@ -112,9 +111,9 @@ function wkCard(it, context, editingId) {
   const box = it.occurrence ? '<span></span>' : check(done, 'toggle-item', it.id, it.title, it.area);
   return `<div class="wk-card area-${esc(it.area)}${done ? ' done' : ''}">
     <div class="wk-row">${box}<div class="wk-body">
-      <div class="wk-title">${esc(it.title)}</div>${it.notes ? `\n      <div class="wk-desc">${esc(it.notes)}</div>` : ''}
+      <button type="button" class="wk-title" data-act="edit-item" data-id="${esc(it.id)}" aria-label="Edit ${esc(it.title)}">${esc(it.title)}</button>${it.notes ? `\n      <div class="wk-desc">${esc(it.notes)}</div>` : ''}
       <div class="wk-meta"><span class="tag">${esc(it.area)}</span> \u00b7 ${esc(shortGroup)}</div>
     </div></div>
-    <div class="wk-foot"><span class="wk-tools">${it.occurrence ? '' : `<button class="wk-star${it.starred ? ' on' : ''}" data-act="toggle-star" data-id="${esc(it.id)}" aria-pressed="${!!it.starred}" aria-label="Star ${esc(it.title)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="${it.starred ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>`}${pencil}</span><span class="time ${label.cls}">${esc(label.text)}</span></div>
+    <div class="wk-foot"><span class="wk-tools">${it.occurrence ? '' : `<button class="wk-star${it.starred ? ' on' : ''}" data-act="toggle-star" data-id="${esc(it.id)}" aria-pressed="${!!it.starred}" aria-label="Star ${esc(it.title)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="${it.starred ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>`}</span><span class="time ${label.cls}">${esc(label.text)}</span></div>
   </div>`;
 }
