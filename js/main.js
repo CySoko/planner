@@ -75,11 +75,24 @@ function render() {
   }
 
   const view = $('#view');
-  const draftSnap = M.collectDrafts(snapshotInputs(view));
+
+  // Capture which non-scratch input has focus so we can restore it after the redraw.
+  let focusSnap = null;
+  const ae = document.activeElement;
+  if (ae && view.contains(ae) && !scratchActive) {
+    if (ae.dataset.stepInput) {
+      focusSnap = { type: 'step', key: ae.dataset.stepInput, sel: ae.selectionStart };
+    } else if (ae.name && ae.closest('[data-form]')) {
+      const form = ae.closest('[data-form]');
+      focusSnap = { type: 'form', formType: form.dataset.form, formKey: form.dataset.id || form.dataset.area || '', fieldName: ae.name, sel: ae.selectionStart };
+    }
+  }
+
+  M.saveDrafts(snapshotInputs(view));
   if (['school', 'life', 'projects'].includes(route)) view.innerHTML = renderArea(route, state, today, nowIso);
   else if (route === 'inbox') view.innerHTML = renderInbox(state);
   else view.innerHTML = renderLanding(state, today, nowIso);
-  restoreInputs(view, draftSnap);
+  restoreInputs(view, M.loadDrafts());
 
   // Check if the week scroll is already at the end (no overflow → no fade).
   const wkEl = view.querySelector('.wk');
@@ -90,6 +103,19 @@ function render() {
     const all = document.querySelectorAll(`[data-scratch-input][data-id="${CSS.escape(scratchSnap.id)}"]`);
     const el = Array.from(all).find(e => e.offsetParent !== null) || all[0];
     if (el) { el.value = scratchSnap.value; el.focus(); el.setSelectionRange(scratchSnap.sel, scratchSnap.sel); }
+  }
+
+  // Restore focus to non-scratch inputs.
+  if (focusSnap && focusSnap.type === 'step') {
+    const t = view.querySelector(`[data-step-input="${CSS.escape(focusSnap.key)}"]`);
+    if (t) { t.focus(); if (focusSnap.sel != null) t.setSelectionRange(focusSnap.sel, focusSnap.sel); }
+  } else if (focusSnap && focusSnap.type === 'form') {
+    view.querySelectorAll(`[data-form="${CSS.escape(focusSnap.formType)}"]`).forEach(form => {
+      const key = form.dataset.id || form.dataset.area || '';
+      if (key !== focusSnap.formKey) return;
+      const f = form.querySelector(`[name="${CSS.escape(focusSnap.fieldName)}"]`);
+      if (f) { f.focus(); if (focusSnap.sel != null && f.setSelectionRange) f.setSelectionRange(focusSnap.sel, focusSnap.sel); }
+    });
   }
 
   renderStatus();
@@ -456,6 +482,7 @@ function addStep(itemId) {
   const input = document.querySelector(`[data-step-input="${CSS.escape(itemId)}"]`);
   const text = input && input.value.trim();
   if (!text) return;
+  M.clearDrafts('step', itemId);
   const existing = state.data.steps.filter(s => s.itemId === itemId).map(s => Number(s.order) || 0);
   saveRows('Steps', [{ id: M.newId('st'), itemId, text, done: false, order: (existing.length ? Math.max(...existing) : 0) + 1, updated: nowIso() }]);
   const again = document.querySelector(`[data-step-input="${CSS.escape(itemId)}"]`);
@@ -466,6 +493,7 @@ function addItem(form) {
   const f = new FormData(form), now = nowIso();
   const title = String(f.get('title') || '').trim();
   if (!title) return;
+  M.clearDrafts('add-item', form.dataset.area || '');
   state.ui.adding = null;
   const item = {
     id: M.newId('it'), area: form.dataset.area, group: f.get('group'), title, date: f.get('date') || '', time: f.get('time') || '',
@@ -478,6 +506,7 @@ function addItem(form) {
 function acceptInbox(form) {
   const row = state.data.inbox.find(r => r.id === form.dataset.id);
   const f = new FormData(form);
+  M.clearDrafts('accept', form.dataset.id || '');
   const where = String(f.get('where') || '');
   const parentId = String(f.get('parentId') || '');
   const errEl = form.querySelector('[data-error]');
@@ -514,6 +543,7 @@ function commitAccept(r) {
 function saveItemEdit(form) {
   const it = state.data.items.find(i => i.id === form.dataset.id);
   if (!it) return;
+  M.clearDrafts('edit-item', form.dataset.id || '');
   const f = new FormData(form);
   const edited = M.applyItemEdit(it, {
     title: f.get('title'), date: f.get('date') || '', time: f.get('time') || '',
@@ -544,7 +574,7 @@ document.addEventListener('click', (e) => {
   if (act === 'toggle-step') toggleStep(id);
   if (act === 'add-step') addStep(id);
   if (act === 'toggle-card') { state.ui.open[id] = !state.ui.open[id]; el.closest('.card').classList.toggle('open'); el.setAttribute('aria-expanded', String(!!state.ui.open[id])); }
-  if (act === 'toggle-add') { state.ui.adding = state.ui.adding === el.dataset.area ? null : el.dataset.area; render(); }
+  if (act === 'toggle-add') { if (state.ui.adding === el.dataset.area) M.clearDrafts('add-item', el.dataset.area || ''); state.ui.adding = state.ui.adding === el.dataset.area ? null : el.dataset.area; render(); }
   if (act === 'dismiss') { const row = state.data.inbox.find(r => r.id === id); if (row) saveRows('Inbox', [M.dismissCapture(row)]); }
   if (act === 'accept-suggestion') acceptSuggestion(id);
   if (act === 'use-alt') {
@@ -596,7 +626,7 @@ document.addEventListener('submit', (e) => {
 
 document.addEventListener('keydown', (e) => {
   if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openPalette(); }
-  if (e.key === 'Escape' && state.ui.editing) { state.ui.editing = null; render(); return; }
+  if (e.key === 'Escape' && state.ui.editing) { M.clearDrafts('edit-item', state.ui.editing); state.ui.editing = null; render(); return; }
   if (e.key === 'Escape' && !$('#palette').hidden) closePalette();
   if (e.target.id === 'capture' && e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); capGuess ? fileCapture() : sendCapture(); }
   if (e.target.closest && e.target.closest('.cap-grid') && e.key === 'Enter') { e.preventDefault(); fileCapture(); return; }

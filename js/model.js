@@ -187,3 +187,21 @@ export function collectDrafts(inputs) {
   }
   return map;
 }
+
+// ---- Persistent draft store ----
+// Survives redraws and page navigations; cleared on submit / cancel.
+const _drafts = {};
+const _draftKey = (t, k, f) => t + '|' + k + '|' + f;
+
+export function saveDrafts(inputs) {
+  for (const { formType, formKey, fieldName, value } of inputs) {
+    if (fieldName) _drafts[_draftKey(formType, formKey, fieldName)] = value;
+  }
+}
+export function loadDrafts() { return { ..._drafts }; }
+export function clearDrafts(formType, formKey) {
+  const prefix = formType + '|' + formKey + '|';
+  for (const k of Object.keys(_drafts)) { if (k.startsWith(prefix)) delete _drafts[k]; }
+}
+export function clearAllDrafts() { for (const k of Object.keys(_drafts)) delete _drafts[k]; }
+export function _draftStoreForTest() { return _drafts; }

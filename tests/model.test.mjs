@@ -235,7 +235,7 @@ test('applyItemEdit ignores date change on weekly repeats', () => {
   assert.equal(edited.title, 'New shift');
 });
 
-import { collectDrafts } from '../js/model.js';
+import { collectDrafts, saveDrafts, loadDrafts, clearDrafts, clearAllDrafts, _draftStoreForTest } from '../js/model.js';
 
 test('collectDrafts builds a key map from form field descriptors', () => {
   const inputs = [
@@ -266,6 +266,51 @@ test('collectDrafts last write wins when the same key appears twice', () => {
     { formType: 'add-item', formKey: 'school', fieldName: 'title', value: 'second' },
   ]);
   assert.equal(map['add-item|school|title'], 'second');
+});
+
+// ---- Persistent draft store ----
+test('saveDrafts persists across multiple calls and loadDrafts returns all', () => {
+  clearAllDrafts();
+  saveDrafts([{ formType: 'add-item', formKey: 'school', fieldName: 'title', value: 'Draft A' }]);
+  saveDrafts([{ formType: 'step', formKey: 'it_1', fieldName: '__v', value: 'step text' }]);
+  const d = loadDrafts();
+  assert.equal(d['add-item|school|title'], 'Draft A');
+  assert.equal(d['step|it_1|__v'], 'step text');
+});
+
+test('clearDrafts removes only entries matching formType+formKey', () => {
+  clearAllDrafts();
+  saveDrafts([
+    { formType: 'step', formKey: 'it_1', fieldName: '__v', value: 'old step' },
+    { formType: 'step', formKey: 'it_2', fieldName: '__v', value: 'keep me' },
+    { formType: 'add-item', formKey: 'school', fieldName: 'title', value: 'also keep' },
+  ]);
+  clearDrafts('step', 'it_1');
+  const d = loadDrafts();
+  assert.equal(d['step|it_1|__v'], undefined);
+  assert.equal(d['step|it_2|__v'], 'keep me');
+  assert.equal(d['add-item|school|title'], 'also keep');
+});
+
+test('clearAllDrafts empties the store completely', () => {
+  saveDrafts([{ formType: 'add-item', formKey: 'life', fieldName: 'title', value: 'gone' }]);
+  clearAllDrafts();
+  assert.deepEqual(loadDrafts(), {});
+});
+
+test('saveDrafts overwrites existing value for the same key', () => {
+  clearAllDrafts();
+  saveDrafts([{ formType: 'step', formKey: 'it_1', fieldName: '__v', value: 'first' }]);
+  saveDrafts([{ formType: 'step', formKey: 'it_1', fieldName: '__v', value: 'second' }]);
+  assert.equal(loadDrafts()['step|it_1|__v'], 'second');
+});
+
+test('loadDrafts returns a copy, not the live store', () => {
+  clearAllDrafts();
+  saveDrafts([{ formType: 'add-item', formKey: 'school', fieldName: 'title', value: 'x' }]);
+  const d = loadDrafts();
+  d['add-item|school|title'] = 'mutated';
+  assert.equal(loadDrafts()['add-item|school|title'], 'x');
 });
 
 test('applyItemEdit ignores blank title', () => {
