@@ -17,7 +17,7 @@ const state = {
   sync: 'loading',
   lastSync: null,
   flushing: false,
-  ui: { open: {}, offer: null, editing: null, scratchDate: null, scratchFocus: null }
+  ui: { open: {}, offer: null, editing: null, scratchDate: null, scratchFocus: null, notice: '' }
 };
 
 const $ = sel => document.querySelector(sel);
@@ -123,15 +123,24 @@ function render() {
   sw.setAttribute('aria-checked', String(document.documentElement.dataset.theme !== 'dark'));
 }
 
+let noticeTimer = null;
+function notify(text) {
+  clearTimeout(noticeTimer);
+  state.ui.notice = text;
+  renderStatus();
+  noticeTimer = setTimeout(() => { state.ui.notice = ‘’; renderStatus(); }, 6000);
+}
+
 function renderStatus() {
   const waiting = state.queue.ops.length;
-  const label = state.sync === 'offline' ? `● offline · ${waiting} change${waiting === 1 ? '' : 's'} waiting`
-    : state.sync === 'saving' ? '● saving…'
-    : state.sync === 'loading' ? '● loading…'
-    : state.sync === 'error' ? '● couldn’t reach the Sheet · showing saved copy'
-    : '● synced';
-  const inbox = state.data.inbox.filter(r => r.status === 'new').length;
-  $('#status').innerHTML = `<span>${esc(label)}</span><span>inbox ${inbox}</span><span>⌘K new task</span>`;
+  const syncLabel = state.sync === ‘offline’ ? `● offline · ${waiting} change${waiting === 1 ? ‘’ : ‘s’} waiting`
+    : state.sync === ‘saving’ ? ‘● saving…’
+    : state.sync === ‘loading’ ? ‘● loading…’
+    : state.sync === ‘error’ ? ‘● couldn’t reach the Sheet · showing saved copy’
+    : ‘● synced’;
+  const label = state.ui.notice || syncLabel;
+  const inbox = state.data.inbox.filter(r => r.status === ‘new’).length;
+  $(‘#status’).innerHTML = `<span>${esc(label)}</span><span>inbox ${inbox}</span><span>⌘K new task</span>`;
 }
 
 // ---------- data ----------
@@ -488,27 +497,23 @@ function fileCapture() {
   if (r.steps.length) saveRows('Steps', r.steps);
   if (r.log.length) saveRows('Log', r.log);
 
-  // Toast
+  // Status-line notice
   const today = M.todayIso();
   const weekEnd = M.addDays(today, 6);
   if (chosen.parentId) {
     const parent = state.data.items.find(i => i.id === chosen.parentId);
-    showToast(`<span>Step added to ${esc(parent ? parent.title : chosen.parentId)}</span><button class="toast-btn" data-act="dismiss-toast" aria-label="Dismiss">\u2715</button>`);
+    notify(`Step added to ${parent ? parent.title : chosen.parentId}`);
   } else if (r.items.length) {
     const it = r.items[0];
     const gName = groupName(state.data.context, it.group);
-    let msg = `Added to ${esc(AREA_LABEL[it.area])} \u00b7 ${esc(gName)}`;
+    let msg = `Added to ${AREA_LABEL[it.area]} \u00b7 ${gName}`;
     if (it.date) {
-      msg += ` \u00b7 ${esc(shortDate(it.date))}`;
+      msg += ` \u00b7 ${shortDate(it.date)}`;
       if (it.date > weekEnd) msg += ' (outside this week)';
     } else {
-      msg += ` \u00b7 no date, find it on the ${esc(AREA_LABEL[it.area])} page`;
+      msg += ` \u00b7 no date, find it on the ${AREA_LABEL[it.area]} page`;
     }
-    toastUndo = () => {
-      const fresh = state.data.items.find(i => i.id === it.id);
-      if (fresh) saveRows('Items', [{ ...fresh, status: 'archived', updated: nowIso() }]);
-    };
-    showToast(`<span>${msg}</span><button class="toast-btn" data-act="undo-toast">undo</button><button class="toast-btn" data-act="dismiss-toast" aria-label="Dismiss">\u2715</button>`);
+    notify(msg);
   }
 
   render();
@@ -524,7 +529,7 @@ function sendCapture() {
   $('#capture').value = '';
   closePalette();
   persist();
-  showToast(`<span>Sent to Inbox to sort later</span><button class="toast-btn" data-act="dismiss-toast" aria-label="Dismiss">\u2715</button>`);
+  notify('Sent to Inbox to sort later');
   render();
   flushSoon();
 }
@@ -534,13 +539,6 @@ function toggleItem(id) {
   if (!it) return;
   const wasDone = it.status === 'done';
   saveRows('Items', [{ ...it, status: wasDone ? 'open' : 'done', updated: nowIso() }]);
-  if (!wasDone) {
-    toastUndo = () => {
-      const fresh = state.data.items.find(i => i.id === id);
-      if (fresh) saveRows('Items', [{ ...fresh, status: 'open', updated: nowIso() }]);
-    };
-    showToast(`<span>${esc(it.title)} done</span><button class="toast-btn" data-act="undo-toast">undo</button><button class="toast-btn" data-act="dismiss-toast" aria-label="Dismiss">\u2715</button>`);
-  }
 }
 function toggleStep(id) {
   const s = state.data.steps.find(x => x.id === id);
