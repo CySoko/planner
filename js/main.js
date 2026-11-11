@@ -128,19 +128,19 @@ function notify(text) {
   clearTimeout(noticeTimer);
   state.ui.notice = text;
   renderStatus();
-  noticeTimer = setTimeout(() => { state.ui.notice = ‘’; renderStatus(); }, 6000);
+  noticeTimer = setTimeout(() => { state.ui.notice = ''; renderStatus(); }, 6000);
 }
 
 function renderStatus() {
   const waiting = state.queue.ops.length;
-  const syncLabel = state.sync === ‘offline’ ? `● offline · ${waiting} change${waiting === 1 ? ‘’ : ‘s’} waiting`
-    : state.sync === ‘saving’ ? ‘● saving…’
-    : state.sync === ‘loading’ ? ‘● loading…’
-    : state.sync === ‘error’ ? ‘● couldn’t reach the Sheet · showing saved copy’
-    : ‘● synced’;
+  const syncLabel = state.sync === 'offline' ? `● offline · ${waiting} change${waiting === 1 ? '' : 's'} waiting`
+    : state.sync === 'saving' ? '● saving…'
+    : state.sync === 'loading' ? '● loading…'
+    : state.sync === 'error' ? '● couldn’t reach the Sheet · showing saved copy'
+    : '● synced';
   const label = state.ui.notice || syncLabel;
-  const inbox = state.data.inbox.filter(r => r.status === ‘new’).length;
-  $(‘#status’).innerHTML = `<span>${esc(label)}</span><span>inbox ${inbox}</span><span>⌘K new task</span>`;
+  const inbox = state.data.inbox.filter(r => r.status === 'new').length;
+  $('#status').innerHTML = `<span>${esc(label)}</span><span>inbox ${inbox}</span><span>⌘K new task</span>`;
 }
 
 // ---------- data ----------
