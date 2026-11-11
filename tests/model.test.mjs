@@ -235,6 +235,39 @@ test('applyItemEdit ignores date change on weekly repeats', () => {
   assert.equal(edited.title, 'New shift');
 });
 
+import { collectDrafts } from '../js/model.js';
+
+test('collectDrafts builds a key map from form field descriptors', () => {
+  const inputs = [
+    { formType: 'add-item', formKey: 'school', fieldName: 'title', value: 'Half-typed' },
+    { formType: 'add-item', formKey: 'school', fieldName: 'date', value: '2026-11-15' },
+    { formType: 'edit-item', formKey: 'it_1', fieldName: 'title', value: 'Old title' },
+    { formType: 'step', formKey: 'it_1', fieldName: '__v', value: 'my step' },
+  ];
+  const map = collectDrafts(inputs);
+  assert.equal(map['add-item|school|title'], 'Half-typed');
+  assert.equal(map['add-item|school|date'], '2026-11-15');
+  assert.equal(map['edit-item|it_1|title'], 'Old title');
+  assert.equal(map['step|it_1|__v'], 'my step');
+});
+
+test('collectDrafts skips entries with empty fieldName', () => {
+  const map = collectDrafts([
+    { formType: 'add-item', formKey: 'school', fieldName: '', value: 'skip me' },
+    { formType: 'add-item', formKey: 'school', fieldName: 'title', value: 'keep me' },
+  ]);
+  assert.equal(Object.keys(map).length, 1);
+  assert.equal(map['add-item|school|title'], 'keep me');
+});
+
+test('collectDrafts last write wins when the same key appears twice', () => {
+  const map = collectDrafts([
+    { formType: 'add-item', formKey: 'school', fieldName: 'title', value: 'first' },
+    { formType: 'add-item', formKey: 'school', fieldName: 'title', value: 'second' },
+  ]);
+  assert.equal(map['add-item|school|title'], 'second');
+});
+
 test('applyItemEdit ignores blank title', () => {
   const item = { id: 'it_3', title: 'Keep me', area: 'school', group: 'neuro', date: '', time: '', type: 'deadline', repeat: 'none', status: 'open', updated: '2026-11-01T10:00:00-07:00' };
   const edited = applyItemEdit(item, { title: '   ' }, '2026-11-09T12:00:00-07:00');

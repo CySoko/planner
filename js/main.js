@@ -23,6 +23,40 @@ const state = {
 const $ = sel => document.querySelector(sel);
 
 // ---------- rendering ----------
+
+// Collect { formType, formKey, fieldName, value } for every named input inside [data-form]
+// elements and [data-step-input] inputs in `el`. Used to survive a full innerHTML swap.
+function snapshotInputs(el) {
+  const inputs = [];
+  el.querySelectorAll('[data-form]').forEach(form => {
+    const formType = form.dataset.form;
+    const formKey = form.dataset.id || form.dataset.area || '';
+    form.querySelectorAll('input, select, textarea').forEach(field => {
+      if (field.name) inputs.push({ formType, formKey, fieldName: field.name, value: field.value });
+    });
+  });
+  el.querySelectorAll('[data-step-input]').forEach(field => {
+    inputs.push({ formType: 'step', formKey: field.dataset.stepInput, fieldName: '__v', value: field.value });
+  });
+  return inputs;
+}
+
+function restoreInputs(el, drafts) {
+  el.querySelectorAll('[data-form]').forEach(form => {
+    const formType = form.dataset.form;
+    const formKey = form.dataset.id || form.dataset.area || '';
+    form.querySelectorAll('input, select, textarea').forEach(field => {
+      if (!field.name) return;
+      const v = drafts[formType + '|' + formKey + '|' + field.name];
+      if (v !== undefined) field.value = v;
+    });
+  });
+  el.querySelectorAll('[data-step-input]').forEach(field => {
+    const v = drafts['step|' + field.dataset.stepInput + '|__v'];
+    if (v !== undefined) field.value = v;
+  });
+}
+
 function render() {
   const now = new Date(), today = M.todayIso(now), nowIso = api.localIso(now);
   $('#today-big').textContent = M.weekdayOf(today) + ' ' + today.slice(5, 7) + '.' + today.slice(8);
@@ -41,9 +75,11 @@ function render() {
   }
 
   const view = $('#view');
+  const draftSnap = M.collectDrafts(snapshotInputs(view));
   if (['school', 'life', 'projects'].includes(route)) view.innerHTML = renderArea(route, state, today, nowIso);
   else if (route === 'inbox') view.innerHTML = renderInbox(state);
   else view.innerHTML = renderLanding(state, today, nowIso);
+  restoreInputs(view, draftSnap);
 
   // Check if the week scroll is already at the end (no overflow → no fade).
   const wkEl = view.querySelector('.wk');
@@ -254,10 +290,14 @@ let toastTimer = null;
 let toastUndoId = null;
 
 function openPalette() {
-  capLastText = ''; capOverrides = {}; capGuess = null;
+  const pal = $('#palette');
+  if (pal.hidden) {
+    capLastText = ''; capOverrides = {}; capGuess = null;
+    $('#capture').value = '';
+  }
   hideToast();
-  $('#palette').hidden = false;
-  const ta = $('#capture'); ta.value = ''; previewCapture(); ta.focus();
+  pal.hidden = false;
+  const ta = $('#capture'); previewCapture(); ta.focus();
 }
 function closePalette() { $('#palette').hidden = true; $('#capture-error').hidden = true; }
 
@@ -614,7 +654,7 @@ document.addEventListener('focusout', (e) => {
 });
 
 document.addEventListener('scroll', (e) => { if (e.target.classList && e.target.classList.contains('wk')) updateWkFade(e.target); }, { capture: true, passive: true });
-window.addEventListener('hashchange', () => { state.ui.adding = null; render(); window.scrollTo(0, 0); });
+window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); });
 window.addEventListener('online', () => { flush(); refresh(); });
 window.addEventListener('offline', () => { state.sync = 'offline'; renderStatus(); });
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { flush(); refresh(); } });

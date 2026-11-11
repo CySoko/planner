@@ -176,3 +176,14 @@ export function carryToToday(row, today, now) {
     { id: newId('sc'), date: today, text: row.text, done: false, order: Date.parse(now), updated: now, deleted: false }
   ];
 }
+
+// Pure helper for preserving form-input drafts across renders.
+// `inputs` is an array of { formType, formKey, fieldName, value } collected from the DOM.
+// Returns a flat map keyed by "formType|formKey|fieldName".
+export function collectDrafts(inputs) {
+  const map = {};
+  for (const { formType, formKey, fieldName, value } of inputs) {
+    if (fieldName) map[formType + '|' + formKey + '|' + fieldName] = value;
+  }
+  return map;
+}
