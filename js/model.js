@@ -31,14 +31,23 @@ export function expandRepeats(items, from, days) {
 }
 
 // The itinerary: one block per day; overdue open items are pulled onto today.
+// Done items stay on their original day (today or future only), shown after open items.
 export function groupByDay(items, steps, today, days = 7) {
   const end = addDays(today, days - 1);
-  const single = items.filter(i => isOpen(i) && i.date && i.repeat !== 'weekly');
-  const all = single.map(i => (i.date < today ? { ...i, overdue: true, date: today } : i)).concat(expandRepeats(items, today, days));
+  const openSingle = items.filter(i => isOpen(i) && i.date && i.repeat !== 'weekly');
+  const doneSingle = items.filter(i => i.status === 'done' && i.date && i.date >= today && i.date <= end && i.repeat !== 'weekly');
+  const openMapped = openSingle.map(i => (i.date < today ? { ...i, overdue: true, date: today } : i));
+  const all = openMapped.concat(doneSingle).concat(expandRepeats(items, today, days));
   return Array.from({ length: days }, (_, k) => {
     const date = addDays(today, k);
     const dayItems = all.filter(i => i.date === date && i.date <= end)
-      .sort((a, b) => (b.overdue ? 1 : 0) - (a.overdue ? 1 : 0) || (a.time || '99:99').localeCompare(b.time || '99:99'));
+      .sort((a, b) => {
+        const aDone = a.status === 'done' ? 1 : 0;
+        const bDone = b.status === 'done' ? 1 : 0;
+        if (aDone !== bDone) return aDone - bDone;
+        if (!aDone) return (b.overdue ? 1 : 0) - (a.overdue ? 1 : 0) || (a.time || '99:99').localeCompare(b.time || '99:99');
+        return (a.time || '99:99').localeCompare(b.time || '99:99');
+      });
     return { date, weekday: weekdayOf(date), num: date.slice(8), today: k === 0, items: dayItems };
   });
 }

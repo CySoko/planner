@@ -9,6 +9,7 @@ export function renderLanding(state, today, nowIso) {
   const q = quoteForDate(today, quotes);
   const days = groupByDay(items, steps, today, 7);
   const weekItems = days.flatMap(d => d.items);
+  const weekOpen = weekItems.filter(i => i.status !== 'done');
   const newInbox = inbox.filter(r => r.status === 'new').length;
   const stalled = groupsFor(context, 'projects').filter(g => isStalled(g.key, items, steps, nowIso)).length;
 
@@ -45,7 +46,7 @@ export function renderLanding(state, today, nowIso) {
       <section class="panel" aria-labelledby="week-h">
         <div class="panel-head">
           <div><h2 id="week-h">This week</h2><div class="muted">Due or happening <b style="color:var(--date)">${shortDate(days[0].date)} → ${shortDate(days[6].date)}</b> <span class="mono wk-more">· scroll for more →</span></div></div>
-          <span class="count">${weekItems.length}</span>
+          <span class="count">${weekOpen.length}</span>
         </div>
         <div class="wk">${colHtml}</div>
       </section>
@@ -59,8 +60,8 @@ export function renderLanding(state, today, nowIso) {
         ${doors}
       </section>
       <section class="stats">
-        <div class="stat"><div class="n">${weekItems.length}</div><div class="l">this week</div></div>
-        <div class="stat"><div class="n" style="color:var(--date)">${weekItems.filter(i => i.type === 'deadline').length}</div><div class="l">deadlines</div></div>
+        <div class="stat"><div class="n">${weekOpen.length}</div><div class="l">this week</div></div>
+        <div class="stat"><div class="n" style="color:var(--date)">${weekOpen.filter(i => i.type === 'deadline').length}</div><div class="l">deadlines</div></div>
         <div class="stat"><div class="n" style="color:var(--stalled)">${stalled}</div><div class="l">stalled</div></div>
       </section>
     </aside>

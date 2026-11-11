@@ -27,13 +27,33 @@ test('groupByDay: 7 days starting today, empty week still has 7 days', () => {
   assert.equal(days[0].num, '02');
 });
 
-test('groupByDay: places open items on their day, sorted by time, skips done and out-of-range', () => {
+test('groupByDay: places open items on their day sorted by time, done items after open ones, skips out-of-range', () => {
   const items = [
     item({ id: 'a', date: '2026-11-05', time: '14:00' }), item({ id: 'b', date: '2026-11-05', time: '09:30' }),
     item({ id: 'c', date: '2026-11-05', status: 'done' }), item({ id: 'd', date: '2026-11-20' })
   ];
   const thu = groupByDay(items, [], '2026-11-02')[3];
-  assert.deepEqual(thu.items.map(i => i.id), ['b', 'a']);
+  assert.deepEqual(thu.items.map(i => i.id), ['b', 'a', 'c']);
+});
+
+test('groupByDay: done item dated before today does not appear', () => {
+  const items = [item({ id: 'old-done', date: '2026-10-30', status: 'done' })];
+  const days = groupByDay(items, [], '2026-11-02');
+  const allIds = days.flatMap(d => d.items.map(i => i.id));
+  assert.ok(!allIds.includes('old-done'));
+});
+
+test('groupByDay: done overdue item is not moved to today', () => {
+  const items = [item({ id: 'done-late', date: '2026-10-30', status: 'done' })];
+  const today = groupByDay(items, [], '2026-11-02')[0];
+  assert.ok(!today.items.some(i => i.id === 'done-late'));
+});
+
+test('groupByDay: archived items still do not appear', () => {
+  const items = [item({ id: 'arc', date: '2026-11-05', status: 'archived' })];
+  const days = groupByDay(items, [], '2026-11-02');
+  const allIds = days.flatMap(d => d.items.map(i => i.id));
+  assert.ok(!allIds.includes('arc'));
 });
 
 test('groupByDay: overdue open items show on today, flagged', () => {
