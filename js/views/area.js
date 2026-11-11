@@ -1,5 +1,5 @@
-import { countdown, daysBetween, isStalled, nextAction } from '../model.js';
-import { esc, AREA_LABEL, groupsFor, timeLabel, check, editItemForm } from './ui.js';
+import { countdown, daysBetween, isStalled, nextAction, todayIso } from '../model.js';
+import { esc, AREA_LABEL, groupsFor, timeLabel, check, editItemForm, shortDate } from './ui.js';
 
 const isOpen = i => i.status !== 'done' && i.status !== 'archived';
 const byDate = (a, b) => (a.date || '9999').localeCompare(b.date || '9999') || (a.time || '').localeCompare(b.time || '');
@@ -76,7 +76,7 @@ function card(it, state, today) {
     </button>
     <div class="card-body"><div><div class="card-inner">
       ${editing ? editItemForm(it, state.data.context) : ''}
-      ${steps.map(s => `<div class="step ${s.done === true ? 'done' : ''}">${check(s.done === true, 'toggle-step', s.id, s.text, it.area)}<span class="step-text">${esc(s.text)}</span></div>`).join('')}
+      ${steps.map(s => { const td = todayIso(); const late = s.date && s.date < td && s.done !== true; return `<div class="step ${s.done === true ? 'done' : ''}">${check(s.done === true, 'toggle-step', s.id, s.text, it.area)}<span class="step-text">${esc(s.text)}</span>${s.date ? `<button class="step-date${late ? ' late' : ''}" data-act="clear-step-date" data-id="${esc(s.id)}" title="Remove date" aria-label="Remove date from ${esc(s.text)}">${shortDate(s.date)}</button>` : ''}</div>`; }).join('')}
       <div class="add-row"><input type="text" placeholder="add step…" aria-label="Add a step to ${esc(it.title)}" data-step-input="${esc(it.id)}">
         <button class="btn small" data-act="add-step" data-id="${esc(it.id)}">+ add step</button></div>
       <div class="card-actions"><button class="btn small" data-act="toggle-star" data-id="${esc(it.id)}">${it.starred ? '\u2605 Starred' : '\u2606 Star'}</button>${editing ? '' : `<button class="btn small" data-act="edit-item" data-id="${esc(it.id)}">Edit</button>`}<button class="btn small" data-act="toggle-item" data-id="${esc(it.id)}">Mark done</button></div>

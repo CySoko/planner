@@ -210,6 +210,9 @@ button.wk-title:focus-visible { outline: none; }
 .step { display: grid; grid-template-columns: 34px minmax(0, 1fr); align-items: center; min-height: 46px; border-radius: 8px; padding-left: 4px; }
 .step:hover { background: var(--hover); }
 .step-text { font-size: 16px; }
+.step-date { margin-left: 8px; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: .06em; color: var(--date); background: none; border: 1px solid var(--line-strong); border-radius: 6px; padding: 1px 5px; cursor: pointer; }
+.step-date:hover { border-color: var(--school); color: var(--school); text-decoration: line-through; }
+.step-date.late { color: var(--school); border-color: var(--school); }
 .add-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; margin-top: 8px; }
 .card-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; flex-wrap: wrap; }
 .form { padding: 18px 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; align-items: end; margin-bottom: 26px; }

@@ -561,7 +561,11 @@ function addStep(itemId) {
   input.value = '';
   M.clearDrafts('step', itemId);
   const existing = state.data.steps.filter(s => s.itemId === itemId).map(s => Number(s.order) || 0);
-  saveRows('Steps', [{ id: M.newId('st'), itemId, text, done: false, order: (existing.length ? Math.max(...existing) : 0) + 1, updated: nowIso() }]);
+  const now = nowIso();
+  const g = safeParse(text, now);
+  const stepDate = g && g.date ? g.date : '';
+  const stepText = (g && g.date && g.title) ? g.title : text;
+  saveRows('Steps', [{ id: M.newId('st'), itemId, text: stepText, done: false, date: stepDate, order: (existing.length ? Math.max(...existing) : 0) + 1, updated: now }]);
   const again = document.querySelector(`[data-step-input="${CSS.escape(itemId)}"]`);
   if (again) again.focus();
 }
@@ -644,6 +648,7 @@ document.addEventListener('click', (e) => {
   if (act === 'toggle-item') toggleItem(id);
   if (act === 'toggle-step') toggleStep(id);
   if (act === 'add-step') addStep(id);
+  if (act === 'clear-step-date') { const s = state.data.steps.find(x => x.id === id); if (s) saveRows('Steps', [{ ...s, date: '', updated: nowIso() }]); }
   if (act === 'toggle-card') { state.ui.open[id] = !state.ui.open[id]; el.closest('.card').classList.toggle('open'); el.setAttribute('aria-expanded', String(!!state.ui.open[id])); }
   if (act === 'toggle-cap-expand') { capExpanded = !capExpanded; previewCapture(); }
   if (act === 'dismiss') {
