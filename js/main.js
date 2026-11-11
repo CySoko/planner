@@ -532,7 +532,15 @@ function sendCapture() {
 function toggleItem(id) {
   const it = state.data.items.find(i => i.id === id);
   if (!it) return;
-  saveRows('Items', [{ ...it, status: it.status === 'done' ? 'open' : 'done', updated: nowIso() }]);
+  const wasDone = it.status === 'done';
+  saveRows('Items', [{ ...it, status: wasDone ? 'open' : 'done', updated: nowIso() }]);
+  if (!wasDone) {
+    toastUndo = () => {
+      const fresh = state.data.items.find(i => i.id === id);
+      if (fresh) saveRows('Items', [{ ...fresh, status: 'open', updated: nowIso() }]);
+    };
+    showToast(`<span>${esc(it.title)} done</span><button class="toast-btn" data-act="undo-toast">undo</button><button class="toast-btn" data-act="dismiss-toast" aria-label="Dismiss">\u2715</button>`);
+  }
 }
 function toggleStep(id) {
   const s = state.data.steps.find(x => x.id === id);
