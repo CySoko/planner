@@ -11,6 +11,7 @@ export function renderLanding(state, today, nowIso) {
   const weekItems = days.flatMap(d => d.items).filter(i => i.kind !== 'step');
   const seen = new Set();
   const weekOpen = weekItems.filter(i => i.status !== 'done' && !seen.has(i.id) && seen.add(i.id));
+  const hasDoneWeek = weekItems.some(i => !i.occurrence && i.status === 'done');
   const newInbox = inbox.filter(r => r.status === 'new').length;
   const stalled = groupsFor(context, 'projects').filter(g => isStalled(g.key, items, steps, nowIso)).length;
 
@@ -48,7 +49,7 @@ export function renderLanding(state, today, nowIso) {
       <section class="panel" aria-labelledby="week-h">
         <div class="panel-head">
           <div><h2 id="week-h">This week</h2><div class="muted">Due or happening <b style="color:var(--date)">${shortDate(days[0].date)} → ${shortDate(days[6].date)}</b> <span class="mono wk-more">· scroll for more →</span></div></div>
-          <span class="count">${weekOpen.length}</span>
+          <div style="display:flex;align-items:center;gap:10px"><button class="clear-done mono" data-act="clear-done-week" style="${hasDoneWeek ? '' : 'visibility:hidden'}">clear done</button><span class="count">${weekOpen.length}</span></div>
         </div>
         <div class="wk">${colHtml}</div>
       </section>

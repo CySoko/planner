@@ -6,6 +6,7 @@ export function renderScratch(rows, date, today) {
   const isPast = date < today;
   const dateLabel = weekdayOf(date) + ' ' + date.slice(5, 7) + '.' + date.slice(8);
   const bullets = rows.map(r => bulletHtml(r, isPast)).join('') + (!isPast ? emptyBullet() : '');
+  const hasDone = rows.some(r => r.done);
 
   return `<section class="panel scratch-panel" data-date="${esc(date)}">
     <div class="scratch-head">
@@ -14,6 +15,7 @@ export function renderScratch(rows, date, today) {
         <span class="mono scratch-date">${esc(dateLabel)}</span>
       </div>
       <div class="scratch-nav-btns">
+        <button class="clear-done mono" data-act="clear-done-scratch" style="${hasDone ? '' : 'visibility:hidden'}">clear done</button>
         <button class="scratch-nav" data-act="scratch-prev" aria-label="Previous day">‹</button>
         <button class="scratch-nav" data-act="scratch-next" aria-label="Next day"${isToday ? ' disabled' : ''}>›</button>
         ${!isToday ? `<button class="btn small scratch-goto" data-act="scratch-goto-today">today</button>` : ''}

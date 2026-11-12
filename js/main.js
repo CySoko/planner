@@ -693,6 +693,43 @@ document.addEventListener('click', (e) => {
   if (act === 'dismiss-toast') hideToast();
   if (act === 'toggle-edit-more') { const more = el.closest('form').querySelector('.wk-edit-more'); more.hidden = !more.hidden; el.textContent = more.hidden ? 'more \u25b8' : '\u25c2 less'; }
   if (act === 'edit-item') { state.ui.editing = state.ui.editing === id ? null : id; if (state.ui.editing) state.ui.open[id] = true; render(); if (state.ui.editing) { const ti = document.querySelector('.wk-title-input'); if (ti) { ti.focus(); ti.setSelectionRange(ti.value.length, ti.value.length); } } }
+  if (act === 'clear-done-week') {
+    const today = M.todayIso();
+    const days = M.groupByDay(state.data.items, state.data.steps, today, 7);
+    const weekItems = days.flatMap(d => d.items).filter(i => i.kind !== 'step');
+    const seen = new Set();
+    const doneIds = weekItems
+      .filter(i => !i.occurrence && i.status === 'done' && !seen.has(i.id) && seen.add(i.id))
+      .map(i => i.id);
+    if (!doneIds.length) return;
+    const now = nowIso();
+    const rows = doneIds.map(id => { const it = state.data.items.find(i => i.id === id); return it ? { ...it, status: 'cleared', updated: now } : null; }).filter(Boolean);
+    saveRows('Items', rows);
+    const n = rows.length;
+    toastUndo = () => {
+      const freshRows = doneIds.map(id => { const it = state.data.items.find(i => i.id === id); return it ? { ...it, status: 'done', updated: nowIso() } : null; }).filter(Boolean);
+      if (freshRows.length) saveRows('Items', freshRows);
+    };
+    showToast(`<span>Cleared ${n}</span><button class="toast-btn" data-act="undo-toast">undo</button><button class="toast-btn" data-act="dismiss-toast" aria-label="Dismiss">\u2715</button>`);
+  }
+  if (act === 'clear-done-scratch') {
+    const date = state.ui.scratchDate || M.todayIso();
+    const doneRows = M.scratchForDate(state.data.scratch, date).filter(r => r.done);
+    if (!doneRows.length) return;
+    const now = nowIso();
+    const ids = doneRows.map(r => r.id);
+    doneRows.forEach(r => saveScratchRowQuiet({ ...r, deleted: true, updated: now }));
+    redrawScratch();
+    const n = doneRows.length;
+    toastUndo = () => {
+      ids.forEach(id => {
+        const r = state.data.scratch.find(r => r.id === id);
+        if (r) saveScratchRowQuiet({ ...r, deleted: false, updated: nowIso() });
+      });
+      redrawScratch();
+    };
+    showToast(`<span>Cleared ${n}</span><button class="toast-btn" data-act="undo-toast">undo</button><button class="toast-btn" data-act="dismiss-toast" aria-label="Dismiss">\u2715</button>`);
+  }
   if (act === 'scratch-prev') {
     state.ui.scratchDate = M.addDays(state.ui.scratchDate || M.todayIso(), -1);
     redrawScratch();
