@@ -103,7 +103,7 @@ function wkCard(it, context, editingId) {
   const done = it.status === 'done';
   const editing = editingId === it.id;
   const label = wkLabel(it);
-  const shortGroup = groupName(context, it.group).split(' \u00b7 ')[0];
+  const shortGroup = it.group ? groupName(context, it.group).split(' \u00b7 ')[0] : '';
   if (editing) {
     return `<div class="wk-card area-${esc(it.area)}${done ? ' done' : ''} editing">
       ${editItemForm(it, context)}
@@ -115,7 +115,7 @@ function wkCard(it, context, editingId) {
     ${it.occurrence ? '' : `<button class="wk-trash" data-act="delete-item" data-id="${esc(it.id)}" aria-label="Delete ${esc(it.title)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>`}
     <div class="wk-row">${box}<div class="wk-body">
       <button type="button" class="wk-title" data-act="edit-item" data-id="${esc(it.id)}" aria-label="Edit ${esc(it.title)}">${esc(it.title)}</button>${it.notes ? `\n      <div class="wk-desc">${esc(it.notes)}</div>` : ''}
-      <div class="wk-meta"><span class="tag">${esc(it.area)}</span> \u00b7 ${esc(shortGroup)}</div>
+      <div class="wk-meta"><span class="tag">${esc(it.area)}</span>${shortGroup ? ' \u00b7 ' + esc(shortGroup) : ''}</div>
     </div></div>
     <div class="wk-foot"><span class="wk-tools">${it.occurrence ? '' : `<button class="wk-star${it.starred ? ' on' : ''}" data-act="toggle-star" data-id="${esc(it.id)}" aria-pressed="${!!it.starred}" aria-label="Star ${esc(it.title)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="${it.starred ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>`}</span><span class="time ${label.cls}">${esc(label.text)}</span></div>
   </div>`;

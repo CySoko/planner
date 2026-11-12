@@ -17,6 +17,8 @@ export function renderArea(area, state, today, nowIso) {
     body += section('Deadlines and plans', '', '', dated, state, today);
     if (weekly.length) body += section('Every week', '', '', weekly, state, today);
   } else {
+    const general = open.filter(i => !i.group || !known.has(i.group));
+    if (general.length) body += section('General', '', '', general, state, today);
     groups.forEach(g => {
       const its = open.filter(i => i.group === g.key);
       if (!its.length && area === 'school') return;
@@ -28,8 +30,6 @@ export function renderArea(area, state, today, nowIso) {
       }
       body += section(g.name, badge, below, its, state, today, area === 'projects');
     });
-    const other = open.filter(i => !known.has(i.group));
-    if (other.length) body += section('Other', '', '', other, state, today);
   }
   if (!open.length) body += `<p class="empty">Nothing open in ${AREA_LABEL[area]}. Use + add task to start one.</p>`;
 

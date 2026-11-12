@@ -20,7 +20,7 @@ export function allGroups(context) {
 }
 export function groupName(context, group) {
   const g = (context || []).find(r => KIND_AREA[r.kind] && String(r.key) === String(group));
-  return g ? String(g.value) : (group || 'unsorted');
+  return g ? String(g.value) : (group || '');
 }
 
 export function shortDate(iso) { return iso ? weekdayOf(iso) + ' ' + iso.slice(5, 7) + '.' + iso.slice(8) : ''; }
