@@ -396,7 +396,7 @@ function previewCapture() {
 
   const lines = text.split('\n').length;
   if (text.length > 2000 || lines > 3) {
-    fields.innerHTML = `<div class="cap-foot"><span class="cap-hint">Long paste \u2014 Claude sorts it tonight.</span><div class="row-end"><button class="btn" data-act="close-palette">esc</button><button class="btn primary" data-act="send-capture">send to inbox \u21b5</button></div></div>`;
+    fields.innerHTML = `<div class="cap-foot"><span class="cap-hint">Long paste. It goes to Inbox for you to sort.</span><div class="row-end"><button class="btn" data-act="close-palette">esc</button><button class="btn primary" data-act="send-capture">send to inbox \u21b5</button></div></div>`;
     capGuess = null;
     return;
   }
