@@ -32,6 +32,7 @@ North Star: `docs/north-star.md` · Design Brief: `docs/design-brief.md` · Gap 
 - `npm test` before every commit. Logic changes get a test; pure functions go in `js/model.js` or `apps-script/*.js`.
 - Sheet columns: never reorder or delete. Add new ones only at the END of a list in `Schema.js`; Cy then re-runs `setupSheet`.
 - Filing: the + add task box files directly; Inbox review files what Cy accepts. Decided Nov 11 but NOT BUILT (don't build it unless asked): captures whose guesses are all rated sure get filed automatically, unsure ones wait in Inbox, and Claude's suggestions always wait in Inbox. The nightly Claude sort (plan Task 10) is dropped.
+- Item status: `open`, `done`, `cleared` (finished and cleared off the lists, kept as a record), `archived` (deleted by Cy, hidden everywhere). Use `isOpen` from `js/model.js`; never compare status by hand.
 - Visual system per the spec: colors only in `tokens.css`; Racing Sans One headings (`font-synthesis: none`), Inter body, JetBrains Mono details; designed dark-first; the theme follows the device's appearance unless Cy has used the switch; all motion stops under `prefers-reduced-motion`.
 
 ## Apps Script (clasp)

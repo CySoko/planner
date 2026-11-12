@@ -5,7 +5,7 @@ const AREA_ORDER = { school: 0, projects: 1, life: 2 };
 const pad = n => String(n).padStart(2, '0');
 const toUtc = d => { const [y, m, dd] = d.split('-').map(Number); return Date.UTC(y, m - 1, dd); };
 const fromUtc = ms => { const x = new Date(ms); return x.getUTCFullYear() + '-' + pad(x.getUTCMonth() + 1) + '-' + pad(x.getUTCDate()); };
-const isOpen = i => i.status !== 'done' && i.status !== 'archived';
+export const isOpen = i => !['done', 'cleared', 'archived'].includes(i.status);
 
 export function todayIso(d = new Date()) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
 export function addDays(iso, n) { return fromUtc(toUtc(iso) + n * 86400000); }

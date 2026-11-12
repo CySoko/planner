@@ -1,4 +1,5 @@
 import { esc, AREAS, AREA_LABEL, allGroups, groupName, shortDate } from './ui.js';
+import { isOpen } from '../model.js';
 
 const parse = s => { try { return JSON.parse(s || '{}') || {}; } catch (e) { return {}; } };
 
@@ -6,7 +7,7 @@ export function renderInbox(state) {
   const { inbox, context, items } = state.data;
   const rows = inbox.filter(r => r.status === 'new').sort((a, b) => String(b.capturedAt).localeCompare(String(a.capturedAt)));
   const offer = state.ui.offer;
-  const openItems = items.filter(i => i.status !== 'done' && i.status !== 'archived');
+  const openItems = items.filter(isOpen);
 
   return `<div>
     <div class="page-head">

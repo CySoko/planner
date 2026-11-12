@@ -56,6 +56,13 @@ test('groupByDay: archived items still do not appear', () => {
   assert.ok(!allIds.includes('arc'));
 });
 
+test('groupByDay: cleared items do not appear', () => {
+  const items = [item({ id: 'clr', date: '2026-11-05', status: 'cleared' })];
+  const days = groupByDay(items, [], '2026-11-02');
+  const allIds = days.flatMap(d => d.items.map(i => i.id));
+  assert.ok(!allIds.includes('clr'));
+});
+
 test('groupByDay: overdue open items show on today, flagged', () => {
   const today = groupByDay([item({ id: 'late', date: '2026-10-30' })], [], '2026-11-02')[0];
   assert.equal(today.items[0].id, 'late');
@@ -133,6 +140,16 @@ test('areaSummary: open count excludes done, next is the earliest dated open ite
   assert.deepEqual(s.next, { date: '2026-11-05', title: 'Emergence' });
   assert.equal(s.pct, 67);
   assert.equal(areaSummary([], [], 'life', '2026-11-02').pct, 0);
+});
+
+test('areaSummary: cleared and archived items excluded from open count', () => {
+  const items = [
+    item({ id: 'o', date: '2026-11-05', status: 'open' }),
+    item({ id: 'clr', date: '2026-11-05', status: 'cleared' }),
+    item({ id: 'arc', date: '2026-11-05', status: 'archived' }),
+  ];
+  const s = areaSummary(items, [], 'school', '2026-11-02');
+  assert.equal(s.open, 1);
 });
 
 test('countdown wording', () => {

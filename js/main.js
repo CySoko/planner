@@ -179,7 +179,7 @@ function pendingInboxRow(p) {
 
 function safeParse(text, now) {
   try {
-    const open = state.data.items.filter(i => i.status !== 'done' && i.status !== 'archived');
+    const open = state.data.items.filter(M.isOpen);
     return parseCapture(text, state.data.context, now, open); // eslint-disable-line no-undef
   } catch (e) { return null; }
 }

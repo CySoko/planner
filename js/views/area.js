@@ -1,7 +1,6 @@
-import { countdown, daysBetween, isStalled, nextAction, todayIso } from '../model.js';
+import { countdown, daysBetween, isOpen, isStalled, nextAction, todayIso } from '../model.js';
 import { esc, AREAS, AREA_LABEL, groupsFor, timeLabel, check, editItemForm, shortDate } from './ui.js';
 
-const isOpen = i => i.status !== 'done' && i.status !== 'archived';
 const byDate = (a, b) => (a.date || '9999').localeCompare(b.date || '9999') || (a.time || '').localeCompare(b.time || '');
 
 export function renderArea(area, state, today, nowIso) {
