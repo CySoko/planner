@@ -120,6 +120,11 @@ button.wk-title:focus-visible { outline: none; }
 .wk-star { position: relative; z-index: 1; width: 16px; height: 16px; border: 0; background: none; color: var(--muted); cursor: pointer; padding: 0; opacity: 0; transition: opacity .25s; }
 .wk-card:hover .wk-star, .wk-card:focus-within .wk-star, .wk-star.on { opacity: 1; }
 .wk-star.on { color: var(--btn); }
+.wk-trash { position: absolute; top: 6px; right: 6px; z-index: 1; width: 24px; height: 24px; border: 0; background: none; color: var(--muted); cursor: pointer; padding: 4px; opacity: 0; transition: opacity .25s; display: flex; align-items: center; justify-content: center; border-radius: 6px; }
+.wk-card:hover .wk-trash, .wk-card:focus-within .wk-trash { opacity: 1; }
+.wk-trash:hover, .wk-trash:focus-visible { color: var(--btn); outline: none; }
+.wk-body { padding-right: 20px; }
+@media (hover: none) { .wk-trash { opacity: .75; } }
 .wk-card .time { margin-left: auto; margin-top: 0; font-size: 9px; padding: 1px 5px; border-radius: 6px; }
 .wk-card .time.do { border-style: dashed; }
 .wk-empty { color: var(--dim); font-size: 13px; text-align: center; padding: 10px 0; border: 1px dashed var(--line); border-radius: 12px; }

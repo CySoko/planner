@@ -649,6 +649,18 @@ document.addEventListener('click', (e) => {
   if (act === 'send-capture') sendCapture();
   if (act === 'file-capture') fileCapture();
   if (act === 'toggle-star') { const it = state.data.items.find(i => i.id === id); if (it) saveRows('Items', [{ ...it, starred: !it.starred, updated: nowIso() }]); }
+  if (act === 'delete-item') {
+    const it = state.data.items.find(i => i.id === id);
+    if (it) {
+      const prevStatus = it.status;
+      saveRows('Items', [{ ...it, status: 'archived', updated: nowIso() }]);
+      toastUndo = () => {
+        const fresh = state.data.items.find(i => i.id === id);
+        if (fresh) saveRows('Items', [{ ...fresh, status: prevStatus, updated: nowIso() }]);
+      };
+      showToast('<span>Deleted</span><button class="toast-btn" data-act="undo-toast">undo</button><button class="toast-btn" data-act="dismiss-toast" aria-label="Dismiss">\u2715</button>');
+    }
+  }
   if (act === 'toggle-item') toggleItem(id);
   if (act === 'toggle-step') toggleStep(id);
   if (act === 'add-step') addStep(id);

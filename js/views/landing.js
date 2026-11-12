@@ -110,6 +110,7 @@ function wkCard(it, context, editingId) {
   }
   const box = it.occurrence ? '<span></span>' : check(done, 'toggle-item', it.id, it.title, it.area);
   return `<div class="wk-card area-${esc(it.area)}${done ? ' done' : ''}">
+    ${it.occurrence ? '' : `<button class="wk-trash" data-act="delete-item" data-id="${esc(it.id)}" aria-label="Delete ${esc(it.title)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>`}
     <div class="wk-row">${box}<div class="wk-body">
       <button type="button" class="wk-title" data-act="edit-item" data-id="${esc(it.id)}" aria-label="Edit ${esc(it.title)}">${esc(it.title)}</button>${it.notes ? `\n      <div class="wk-desc">${esc(it.notes)}</div>` : ''}
       <div class="wk-meta"><span class="tag">${esc(it.area)}</span> \u00b7 ${esc(shortGroup)}</div>
