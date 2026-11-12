@@ -423,16 +423,12 @@ function previewCapture() {
 
   const [destArea, destGroup] = (whereVal || '').split('/');
   const destName = destGroup ? groupName(state.data.context, destGroup) : '';
-  const pending = resolved.pendingArea;
-  const destLabel = destArea ? `add to ${destName}` : (pending ? 'pick where' : 'choose where');
+  const destLabel = destArea ? `add to ${destName || AREA_LABEL[destArea]}` : 'choose where';
 
   // Compact summary (default) vs full grid (expanded)
   const summaryParts = [];
   if (destArea) {
-    summaryParts.push(`${esc(AREA_LABEL[destArea])} \u00b7 ${esc(destName)}`);
-  } else if (pending) {
-    const hint = pending === 'school' ? 'pick a class' : pending === 'life' ? 'pick a part of life' : 'pick a project';
-    summaryParts.push(`${esc(AREA_LABEL[pending])} \u00b7 <span class="cap-pending">${esc(hint)}</span>`);
+    summaryParts.push(destName ? `${esc(AREA_LABEL[destArea])} \u00b7 ${esc(destName)}` : esc(AREA_LABEL[destArea]));
   }
   if (dateVal) summaryParts.push(esc(shortDate(dateVal)));
   summaryParts.push(esc(typeVal));
@@ -447,7 +443,7 @@ function previewCapture() {
       <div class="cap-foot">
         <button class="btn" data-act="close-palette">esc</button>
         <button class="btn" data-act="send-capture">inbox instead</button>
-        <button class="btn primary" data-act="file-capture" ${!whereVal && !pending ? 'disabled' : ''}>${esc(destLabel)} \u21b5</button>
+        <button class="btn primary" data-act="file-capture" ${!whereVal ? 'disabled' : ''}>${esc(destLabel)} \u21b5</button>
       </div>`;
     return;
   }
@@ -515,8 +511,8 @@ function fileCapture() {
     notify(`Step added to ${parent ? parent.title : chosen.parentId}`);
   } else if (r.items.length) {
     const it = r.items[0];
-    const gName = groupName(state.data.context, it.group);
-    let msg = `Added to ${AREA_LABEL[it.area]} \u00b7 ${gName}`;
+    const gName = it.group ? groupName(state.data.context, it.group) : '';
+    let msg = gName ? `Added to ${AREA_LABEL[it.area]} \u00b7 ${gName}` : `Added to ${AREA_LABEL[it.area]}`;
     if (it.date) {
       msg += ` \u00b7 ${shortDate(it.date)}`;
       if (it.date > weekEnd) msg += ' (outside this week)';
@@ -798,7 +794,7 @@ document.addEventListener('change', (e) => {
       if (btn) {
         const [a, g] = (e.target.value || '').split('/');
         const name = g ? groupName(state.data.context, g) : '';
-        btn.textContent = a ? `add to ${name} \u21b5` : 'choose where \u21b5';
+        btn.textContent = a ? `add to ${name || AREA_LABEL[a]} \u21b5` : 'choose where \u21b5';
         btn.disabled = !a;
       }
     }

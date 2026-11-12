@@ -445,6 +445,13 @@ test('applyItemEdit leaves notes untouched when changes.notes is undefined', () 
   assert.equal(edited.notes, 'keep me');
 });
 
+test('applyItemEdit clears group when where has empty group', () => {
+  const it = { id: 'it_g', title: 'T', area: 'school', group: 'neuro', date: '', time: '', type: 'deadline', repeat: 'none', status: 'open', updated: '' };
+  const edited = applyItemEdit(it, { where: 'school/' }, '2026-11-09T12:00:00-07:00');
+  assert.equal(edited.area, 'school');
+  assert.equal(edited.group, '');
+});
+
 test('applyItemEdit ignores blank title', () => {
   const item = { id: 'it_3', title: 'Keep me', area: 'school', group: 'neuro', date: '', time: '', type: 'deadline', repeat: 'none', status: 'open', updated: '2026-11-01T10:00:00-07:00' };
   const edited = applyItemEdit(item, { title: '   ' }, '2026-11-09T12:00:00-07:00');
@@ -477,18 +484,16 @@ test('resolveCapture: a sure where guess beats the preset', () => {
   assert.equal(r.where, 'school/neuro');
 });
 
-test('resolveCapture: unsure guess in a different area gives empty where and pendingArea', () => {
+test('resolveCapture: unsure guess in a different area resolves to presetArea with no group', () => {
   const guess = { title: 'Buy tape', area: 'projects', group: 'plx', date: '', time: '', type: 'deadline', confidence: { where: 'unsure' } };
   const r = resolveCapture(guess, {}, 'life', groups);
-  assert.equal(r.where, '');
-  assert.equal(r.pendingArea, 'life');
+  assert.equal(r.where, 'life/');
 });
 
-test('resolveCapture: no guess at all plus preset gives empty where and pendingArea', () => {
+test('resolveCapture: no guess at all plus preset gives area with no group', () => {
   const guess = { title: 'Random thing', area: '', group: '', date: '', time: '', type: '', confidence: {} };
   const r = resolveCapture(guess, {}, 'school', groups);
-  assert.equal(r.where, '');
-  assert.equal(r.pendingArea, 'school');
+  assert.equal(r.where, 'school/');
 });
 
 test('resolveCapture: unsure guess in the preset area keeps its guessed group', () => {
@@ -618,6 +623,12 @@ test('groupByDay today: open step sorts after its area untimed items', () => {
   const days = groupByDay(items, steps, '2026-11-02');
   const todayIds = days[0].items.map(i => i.id);
   assert.ok(todayIds.indexOf('p7') < todayIds.indexOf('st7'), 'item before its step');
+});
+
+test('resolveCapture: result never has pendingArea property', () => {
+  const guess = { title: 'X', area: '', group: '', date: '', time: '', type: '', confidence: {} };
+  const r = resolveCapture(guess, {}, 'school', groups);
+  assert.equal(r.pendingArea, undefined);
 });
 
 test('resolveCapture: no preset and no guess gives empty where', () => {

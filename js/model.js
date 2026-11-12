@@ -204,9 +204,11 @@ export function applyItemEdit(item, changes, nowIso) {
   if (changes.type) out.type = changes.type;
   if (changes.notes !== undefined) out.notes = changes.notes.trim();
   if (changes.where) {
-    const [area, group] = changes.where.split('/');
+    const slash = changes.where.indexOf('/');
+    const area = slash >= 0 ? changes.where.slice(0, slash) : changes.where;
+    const group = slash >= 0 ? changes.where.slice(slash + 1) : '';
     if (area) out.area = area;
-    if (group) out.group = group;
+    out.group = group;
   }
   return out;
 }
@@ -281,7 +283,7 @@ export function resolveCapture(guess, overrides, presetArea, groups, presetDate 
   const time = overrides.time !== undefined ? overrides.time : (g.time || '');
   const type = overrides.type || g.type || 'deadline';
 
-  let where, pendingArea = '';
+  let where;
   if (overrides.where !== undefined) {
     where = overrides.where;
   } else if (conf.where === 'sure') {
@@ -290,8 +292,7 @@ export function resolveCapture(guess, overrides, presetArea, groups, presetDate 
     if (g.area === presetArea) {
       where = g.area + '/' + (g.group || '');
     } else {
-      where = '';
-      pendingArea = presetArea;
+      where = presetArea + '/';
     }
   } else if (g.area) {
     where = g.area + '/' + (g.group || '');
@@ -299,5 +300,5 @@ export function resolveCapture(guess, overrides, presetArea, groups, presetDate 
     where = '';
   }
 
-  return { where, pendingArea, title, date, time, type };
+  return { where, title, date, time, type };
 }
