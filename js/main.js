@@ -5,7 +5,7 @@ import { renderLanding } from './views/landing.js';
 import { renderArea } from './views/area.js';
 import { renderInbox } from './views/inbox.js';
 import { renderScratch } from './views/scratch.js';
-import { esc, allGroups, groupName, AREA_LABEL, shortDate } from './views/ui.js';
+import { esc, allGroups, groupsFor, groupName, AREA_LABEL, shortDate, wherePicker } from './views/ui.js';
 
 const TAB_KEY = { Items: 'items', Steps: 'steps', Inbox: 'inbox', Context: 'context', Quotes: 'quotes', Scratch: 'scratch' };
 const KEY_OF = { Context: r => r.kind + '|' + r.key, Quotes: r => r.text };
@@ -435,9 +435,11 @@ function previewCapture() {
   const summaryLine = summaryParts.join(' \u00a0\u2022\u00a0 ');
 
   if (!capExpanded) {
+    const compactPills = !destArea ? wherePicker('cap-where', state.data.context, '') : '';
     fields.innerHTML = `
       <div class="cap-summary">
         <span class="cap-summary-text">${titleVal ? '<b>' + esc(titleVal) + '</b> \u2014 ' : ''}${summaryLine}</span>
+        ${compactPills}
         <button class="btn small" data-act="toggle-cap-expand">more \u25b8</button>
       </div>
       <div class="cap-foot">
@@ -448,14 +450,12 @@ function previewCapture() {
     return;
   }
 
-  const whereOpts = (whereVal ? '' : '<option value="">\u2014</option>') +
-    groups.map(gr => `<option value="${esc(gr.area + '/' + gr.key)}" ${gr.area + '/' + gr.key === whereVal ? 'selected' : ''}>${esc(AREA_LABEL[gr.area])} \u00b7 ${esc(gr.name)}</option>`).join('');
   const typeOpts = ['deadline', 'event', 'do-date'].map(t => `<option ${t === typeVal ? 'selected' : ''}>${t}</option>`).join('');
 
   fields.innerHTML = `
     <div class="cap-grid">
       <label class="cap-f">Title<input type="text" name="cap-title" value="${esc(titleVal)}"></label>
-      <label class="cap-f">Where<select name="cap-where">${whereOpts}</select></label>
+      <div class="cap-f">Where${wherePicker('cap-where', state.data.context, whereVal)}</div>
       <label class="cap-f">Date<input type="date" name="cap-date" value="${esc(dateVal)}"></label>
       <label class="cap-f">Time<input type="time" name="cap-time" value="${esc(timeVal)}"></label>
       <label class="cap-f">Type<select name="cap-type">${typeOpts}</select></label>
@@ -626,6 +626,65 @@ function updateWkFade(el) { el.classList.toggle('at-end', el.scrollLeft + el.cli
 const AREAS = new Set(['school', 'life', 'projects']);
 function currentArea() { const r = (location.hash.replace(/^#\/?/, '') || '').split('?')[0]; return AREAS.has(r) ? r : ''; }
 
+// ---------- where picker ----------
+function wpPickArea(pill) {
+  const wp = pill.closest('[data-wp]');
+  if (!wp) return;
+  const area = pill.dataset.wpArea;
+  const fieldName = wp.dataset.wpField;
+  // Update pill states
+  wp.querySelectorAll('.wp-pill').forEach(p => {
+    const on = p.dataset.wpArea === area;
+    p.classList.toggle('on', on);
+    p.setAttribute('aria-pressed', String(on));
+  });
+  // Rebuild group dropdown
+  const groups = groupsFor(state.data.context, area);
+  let sel = wp.querySelector('.wp-group');
+  if (!sel) {
+    sel = document.createElement('select');
+    sel.className = 'wp-group';
+    sel.dataset.wpGroup = '';
+    wp.querySelector('.wp-pills').after(sel);
+  }
+  sel.innerHTML = `<option value="">none</option>` + groups.map(g => `<option value="${esc(g.key)}">${esc(g.name)}</option>`).join('');
+  // Update hidden input
+  const hidden = wp.querySelector(`input[name="${CSS.escape(fieldName)}"]`);
+  if (hidden) hidden.value = area + '/';
+  wpSync(wp);
+}
+
+function wpGroupChange(sel) {
+  const wp = sel.closest('[data-wp]');
+  if (!wp) return;
+  const fieldName = wp.dataset.wpField;
+  const hidden = wp.querySelector(`input[name="${CSS.escape(fieldName)}"]`);
+  const activeArea = wp.querySelector('.wp-pill.on');
+  if (hidden && activeArea) hidden.value = activeArea.dataset.wpArea + '/' + sel.value;
+  wpSync(wp);
+}
+
+function wpSync(wp) {
+  const fieldName = wp.dataset.wpField;
+  const hidden = wp.querySelector(`input[name="${CSS.escape(fieldName)}"]`);
+  if (!hidden) return;
+  const val = hidden.value;
+  // If this is in the capture form, update capOverrides
+  if (fieldName === 'cap-where') {
+    capOverrides.where = val;
+    const btn = document.querySelector('[data-act="file-capture"]');
+    if (btn) {
+      const [a, g] = val.split('/');
+      const name = g ? groupName(state.data.context, g) : '';
+      btn.textContent = a ? `add to ${name || AREA_LABEL[a]} \u21b5` : 'choose where \u21b5';
+      btn.disabled = !a;
+    }
+    // Update summary text if in compact mode
+    const summaryText = document.querySelector('.cap-summary-text');
+    if (summaryText && !capExpanded) previewCapture();
+  }
+}
+
 // ---------- events ----------
 document.addEventListener('click', (e) => {
   const el = e.target.closest('[data-act]');
@@ -688,6 +747,7 @@ document.addEventListener('click', (e) => {
   }
   if (act === 'undo-toast') undoToast();
   if (act === 'dismiss-toast') hideToast();
+  if (el.dataset.wpArea) { wpPickArea(el); return; }
   if (act === 'toggle-edit-more') { const more = el.closest('form').querySelector('.wk-edit-more'); more.hidden = !more.hidden; el.textContent = more.hidden ? 'more \u25b8' : '\u25c2 less'; }
   if (act === 'edit-item') { state.ui.editing = state.ui.editing === id ? null : id; if (state.ui.editing) state.ui.open[id] = true; render(); if (state.ui.editing) { const ti = document.querySelector('.wk-title-input'); if (ti) { ti.focus(); ti.setSelectionRange(ti.value.length, ti.value.length); } } }
   if (act === 'clear-done-week') {
@@ -786,6 +846,7 @@ document.addEventListener('input', (e) => {
   }
 });
 document.addEventListener('change', (e) => {
+  if (e.target.dataset.wpGroup !== undefined) { wpGroupChange(e.target); return; }
   if (e.target.name && e.target.name.startsWith('cap-')) {
     const field = e.target.name.slice(4);
     capOverrides[field] = e.target.value;

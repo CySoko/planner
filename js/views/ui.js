@@ -32,6 +32,21 @@ export function timeLabel(item) {
   return null;
 }
 
+export function wherePicker(fieldName, context, selectedWhere) {
+  const [selArea, selGroup] = (selectedWhere || '').split('/');
+  const areaGroups = selArea ? groupsFor(context, selArea) : [];
+  const pills = AREAS.map(a =>
+    `<button type="button" class="wp-pill area-${a}${a === selArea ? ' on' : ''}" data-wp-area="${a}" aria-pressed="${a === selArea}">${AREA_LABEL[a]}</button>`
+  ).join('');
+  const opts = `<option value="">none</option>` +
+    areaGroups.map(g => `<option value="${esc(g.key)}" ${g.key === selGroup ? 'selected' : ''}>${esc(g.name)}</option>`).join('');
+  return `<div class="wp" data-wp data-wp-field="${esc(fieldName)}">
+    <div class="wp-pills">${pills}</div>
+    ${selArea ? `<select class="wp-group" data-wp-group>${opts}</select>` : ''}
+    <input type="hidden" name="${esc(fieldName)}" value="${esc(selectedWhere || '')}">
+  </div>`;
+}
+
 export function editItemForm(it, context) {
   const groups = allGroups(context);
   return `<form class="wk-pop" data-form="edit-item" data-id="${esc(it.id)}">

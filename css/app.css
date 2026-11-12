@@ -62,6 +62,15 @@ textarea { font-size: 17px; resize: vertical; }
 .cap-summary-text { font-size: 14px; color: var(--muted); flex: 1; min-width: 0; }
 .cap-foot { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; margin-top: 4px; }
 .cap-pending { color: var(--unsure); }
+/* where picker */
+.wp { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.wp-pills { display: flex; gap: 6px; }
+.wp-pill { display: inline-flex; align-items: center; justify-content: center; min-height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line-strong); background: transparent; cursor: pointer; font-size: 13px; font-weight: 600; transition: background .15s, border-color .15s; }
+.wp-pill:focus-visible { outline: 2px solid var(--btn); outline-offset: 2px; }
+.wp-pill.area-school.on { background: var(--school); color: var(--btn-text); border-color: var(--school); }
+.wp-pill.area-life.on { background: var(--life); color: var(--btn-text); border-color: var(--life); }
+.wp-pill.area-projects.on { background: var(--projects); color: var(--btn-text); border-color: var(--projects); }
+.wp-group { font-size: 14px; min-height: 32px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--panel-solid); padding: 0 8px; }
 .error { color: var(--school); margin: 0; font-size: 13px; }
 
 /* always remember */
