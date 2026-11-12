@@ -112,7 +112,7 @@ textarea { font-size: 17px; resize: vertical; }
 .wk-col.is-today .wk-head { background: transparent; border-top: none; border-left: none; border-right: none; border-bottom: 2px solid var(--btn); border-radius: 0; padding: 9px 10px 7px; }
 .wk-col.is-today .wk-head .wd { color: var(--btn); }
 .wk-col.is-today .wk-head .num { font-size: 34px; color: var(--text); }
-.wk-col:not(.is-today) .wk-meta { display: none; }
+.wk-col:not(.is-today) .wk-where { display: none; }
 .wk-items { display: flex; flex-direction: column; gap: 8px; }
 .wk-card { position: relative; display: flex; flex-direction: column; gap: 6px; padding: 10px; border-radius: var(--r-12); background: var(--hover); border: 1px solid var(--line); transition: border-color var(--t-300), transform var(--t-300) var(--ease-out), box-shadow var(--t-300); cursor: pointer; }
 .wk-card:hover, .wk-card:focus-within { border-color: var(--area); transform: translateY(-2px); box-shadow: 0 18px 40px -26px var(--area); }
@@ -125,17 +125,17 @@ button.wk-title::after { content: ''; position: absolute; inset: 0; border-radiu
 button.wk-title:focus-visible { outline: none; }
 .wk-card:has(button.wk-title:focus-visible) { outline: 2px solid var(--area); outline-offset: 2px; }
 .wk-card.done .wk-title { color: var(--dim); text-decoration: line-through; }
-.wk-meta { font-family: var(--font-mono); font-size: 10px; color: var(--muted); overflow-wrap: anywhere; }
+.wk-meta { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; font-family: var(--font-mono); font-size: 10px; color: var(--muted); overflow-wrap: anywhere; }
 .wk-foot { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
-.wk-star { position: relative; z-index: 1; width: 16px; height: 16px; border: 0; background: none; color: var(--muted); cursor: pointer; padding: 0; opacity: 0; transition: opacity var(--t-250); }
+.wk-star { position: absolute; top: 6px; right: 32px; z-index: 1; width: 24px; height: 24px; padding: 4px; border: 0; background: none; color: var(--muted); cursor: pointer; opacity: 0; transition: opacity var(--t-250); display: flex; align-items: center; justify-content: center; border-radius: var(--r-6); }
 .wk-card:hover .wk-star, .wk-card:focus-within .wk-star, .wk-star.on { opacity: 1; }
 .wk-star.on { color: var(--btn); }
 .wk-trash { position: absolute; top: 6px; right: 6px; z-index: 1; width: 24px; height: 24px; border: 0; background: none; color: var(--muted); cursor: pointer; padding: 4px; opacity: 0; transition: opacity var(--t-250); display: flex; align-items: center; justify-content: center; border-radius: var(--r-6); }
 .wk-card:hover .wk-trash, .wk-card:focus-within .wk-trash { opacity: 1; }
 .wk-trash:hover, .wk-trash:focus-visible { color: var(--btn); outline: none; }
-.wk-body { padding-right: 20px; }
+.wk-body { padding-right: 60px; }
 @media (hover: none) { .wk-trash { opacity: .75; } }
-.wk-card .time { margin-left: auto; margin-top: 0; font-size: 9px; padding: 1px 5px; border-radius: var(--r-6); }
+.wk-card .time { margin-top: 0; font-size: 9px; padding: 1px 5px; border-radius: var(--r-6); }
 .wk-card .time.do { border-style: dashed; }
 .wk-empty { color: var(--dim); font-size: 13px; text-align: center; padding: 10px 0; border: 1px dashed var(--line); border-radius: var(--r-12); }
 .wk-add { width: 100%; margin-top: 8px; padding: 6px; border: 1px dashed var(--line); border-radius: var(--r-10); background: none; color: var(--muted); font-size: 12px; cursor: pointer; transition: border-color var(--t-200), color var(--t-200); }
@@ -295,7 +295,7 @@ button.wk-title:focus-visible { outline: none; }
   .card-inner { padding-left: 20px; }
   .wk { grid-auto-columns: calc((100% - 8px) / 2.2); }
   .wk-col.is-today { grid-column: span 1; }
-  .wk-col:not(.is-today) .wk-meta, .wk-col:not(.is-today) .wk-desc { display: revert; }
+  .wk-col:not(.is-today) .wk-where, .wk-col:not(.is-today) .wk-desc { display: revert; }
   .card-head { padding: 14px; gap: 12px; }
   .top-right { justify-content: flex-start; }
   .today { text-align: left; }
