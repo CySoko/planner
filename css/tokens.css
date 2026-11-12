@@ -28,6 +28,9 @@
   --glow: rgba(212, 42, 60, .35);
   --shadow: 0 30px 80px -45px rgba(20, 20, 40, .35);
   color-scheme: light;
+  --font-display: 'Racing Sans One', 'IBM Plex Sans', sans-serif;
+  --font-body: 'IBM Plex Sans', ui-sans-serif, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
 }
 :root[data-theme="dark"] {
   --bg: #080810;
