@@ -32,6 +32,7 @@ function parseCapture(text, context, nowIso, openItems) {
 
   // 2. Where: keyword matches. Keyword spans are masked so "mountain SUN" is never read as Sunday.
   let masked = lc;
+  let whereKeys = [];
   if (!result.parentId) {
     const keywords = (context || []).filter(r => r.kind === 'keyword' && isActive_(r.active) && r.key);
     const hits = [];
@@ -40,12 +41,13 @@ function parseCapture(text, context, nowIso, openItems) {
       const m = lc.match(re);
       if (m) {
         const at = m.index + m[1].length;
-        hits.push({ at: at, value: String(k.value) });
+        hits.push({ at: at, value: String(k.value), key: m[2] });
         masked = masked.slice(0, at) + ' '.repeat(m[2].length) + masked.slice(at + m[2].length);
       }
     });
     hits.sort((a, b) => a.at - b.at);
     const values = [...new Set(hits.map(h => h.value))];
+    if (values.length === 1) whereKeys = hits.map(h => h.key);
     if (values.length) {
       setWhere_(result, values[0]);
       result.confidence.where = values.length === 1 ? 'sure' : 'unsure';
@@ -131,6 +133,15 @@ function parseCapture(text, context, nowIso, openItems) {
   title = title.replace(/\s+/g, ' ').trim();
   for (let i = 0; i < 3; i++) title = title.replace(/^(?:due|by|on|at|the)\s+/i, '').replace(/\s+(?:due|by|on|at|the)$/i, '').replace(/^[,\-\s]+|[,\-\s]+$/g, '');
   if (!title) title = src;
+  const preStrip = title;
+  title = title.replace(/^(?:i need to|i have to|i want to|i got to|i gotta|i should|need to|have to|remember to|don't forget to|remind me to)\s+/i, '');
+  title = title.replace(/^do (?:the|my) /i, '');
+  if (result.confidence.where === 'sure') {
+    for (const wk of whereKeys) {
+      title = title.replace(new RegExp('\\s+for (?:the |my )?' + escapeRe_(wk) + '(?: class)?$', 'i'), '');
+    }
+  }
+  if (title.replace(/\s+/g, '').length < 2) title = preStrip;
   result.title = title.charAt(0).toUpperCase() + title.slice(1);
   return result;
 }
