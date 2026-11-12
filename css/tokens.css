@@ -1,4 +1,4 @@
-/* SOKOGEN planner color system. Light is the default; dark is switched by data-theme. */
+/* SOKOGEN planner color system. Dark is the primary design; the device decides the default unless overridden. */
 :root,
 :root[data-theme="light"] {
   --bg: #F3F3F7;

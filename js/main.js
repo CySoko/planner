@@ -637,7 +637,11 @@ document.addEventListener('click', (e) => {
   if (act === 'toggle-theme') {
     const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
     document.documentElement.dataset.theme = next;
-    try { localStorage.setItem('sokogen-theme-v2', next); } catch (err) { /* ignore */ }
+    try {
+      const deviceTheme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      if (next === deviceTheme) localStorage.removeItem('sokogen-theme-v2');
+      else localStorage.setItem('sokogen-theme-v2', next);
+    } catch (err) { /* ignore */ }
     render();
   }
   if (act === 'open-palette') openPalette(el.dataset.area || currentArea(), el.dataset.date || '');
@@ -787,6 +791,9 @@ document.addEventListener('focusout', (e) => {
 });
 
 document.addEventListener('scroll', (e) => { if (e.target.classList && e.target.classList.contains('wk')) updateWkFade(e.target); }, { capture: true, passive: true });
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+  try { if (!localStorage.getItem('sokogen-theme-v2')) { document.documentElement.dataset.theme = e.matches ? 'dark' : 'light'; render(); } } catch (err) { /* ignore */ }
+});
 window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); });
 window.addEventListener('online', () => { flush(); refresh(); });
 window.addEventListener('offline', () => { state.sync = 'offline'; renderStatus(); });
