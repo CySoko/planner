@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { todayIso, addDays, quoteForDate, groupByDay, areaSummary, countdown, expandRepeats, isStalled, nextAction, applyItemEdit, resolveCapture } from '../js/model.js';
+import { todayIso, addDays, quoteForDate, groupByDay, areaSummary, countdown, expandRepeats, isStalled, nextAction, applyItemEdit, resolveCapture, reschedule } from '../js/model.js';
 
 const quotes = [{ text: 'A', active: true }, { text: 'B', active: true }, { text: 'C', active: false }];
 const item = (o) => ({ id: 'i', area: 'school', group: 'neuro', title: 'T', date: '', time: '', type: 'deadline', repeat: 'none', status: 'open', created: '2026-10-01T00:00:00-07:00', updated: '', ...o });
@@ -643,4 +643,19 @@ test('resolveCapture: override date beats both guess and presetDate', () => {
   const guess = { title: 'Reading', area: 'school', group: 'neuro', date: '2026-11-10', time: '', type: 'deadline', confidence: { where: 'sure' } };
   const r = resolveCapture(guess, { date: '2026-12-01' }, '', groups, '2026-11-05');
   assert.equal(r.date, '2026-12-01');
+});
+
+// ---- reschedule ----
+test('reschedule: returns a copy with new date and updated, original unchanged', () => {
+  const row = { id: 'it_1', title: 'T', date: '2026-11-05', repeat: 'none', status: 'open', updated: '' };
+  const result = reschedule(row, '2026-11-07', '2026-11-07T10:00:00-07:00');
+  assert.equal(result.date, '2026-11-07');
+  assert.equal(result.updated, '2026-11-07T10:00:00-07:00');
+  assert.equal(result.id, 'it_1');
+  assert.equal(row.date, '2026-11-05'); // original untouched
+});
+
+test('reschedule: returns null for weekly repeat', () => {
+  const row = { id: 'it_2', title: 'Weekly', date: '2026-11-07', repeat: 'weekly', status: 'open' };
+  assert.equal(reschedule(row, '2026-11-14', '2026-11-07T10:00:00-07:00'), null);
 });

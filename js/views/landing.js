@@ -16,7 +16,7 @@ export function renderLanding(state, today, nowIso) {
   const stalled = groupsFor(context, 'projects').filter(g => isStalled(g.key, items, steps, nowIso)).length;
 
   const colHtml = days.map(d => `
-    <div class="wk-col${d.today ? ' is-today' : ''}">
+    <div class="wk-col${d.today ? ' is-today' : ''}" data-date="${d.date}">
       <div class="wk-head"><span class="wd">${d.weekday}</span><span class="num">${d.num}</span></div>
       ${d.items.length ? `<div class="wk-items">${d.items.map(it => it.kind === 'step' ? wkStepCard(it) : wkCard(it, context, state.ui.editing)).join('')}</div>` : (d.today ? '<div class="wk-empty">Nothing due today.</div>' : '')}
       <button class="wk-add" data-act="open-palette" data-date="${d.date}">+ add</button>
@@ -75,7 +75,7 @@ function wkStepCard(s) {
   const done = s.done === true;
   const box = check(done, 'toggle-step', s.id, s.text, s.area);
   const label = s.overdue ? { text: 'OVERDUE', cls: 'overdue' } : null;
-  return `<div class="wk-card wk-step area-${esc(s.area)}${done ? ' done' : ''}">
+  return `<div class="wk-card wk-step area-${esc(s.area)}${done ? ' done' : ''}" draggable="true" data-drag="step" data-id="${esc(s.id)}">
     <div class="wk-row">${box}<div class="wk-body">
       <div class="wk-title">${esc(s.text)}</div>
       <button class="wk-parent" data-act="open-parent" data-id="${esc(s.itemId)}" data-area="${esc(s.area)}">↳ ${esc(s.parentTitle)}</button>
@@ -110,7 +110,8 @@ function wkCard(it, context, editingId) {
     </div>`;
   }
   const box = it.occurrence ? '<span></span>' : check(done, 'toggle-item', it.id, it.title, it.area);
-  return `<div class="wk-card area-${esc(it.area)}${done ? ' done' : ''}">
+  const draggable = !it.occurrence && it.pinnedFrom === undefined;
+  return `<div class="wk-card area-${esc(it.area)}${done ? ' done' : ''}"${draggable ? ` draggable="true" data-drag="item" data-id="${esc(it.id)}"` : ''}>
     ${it.occurrence ? '' : `<button class="wk-trash" data-act="delete-item" data-id="${esc(it.id)}" aria-label="Delete ${esc(it.title)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>`}
     <div class="wk-row">${box}<div class="wk-body">
       <button type="button" class="wk-title" data-act="edit-item" data-id="${esc(it.id)}" aria-label="Edit ${esc(it.title)}">${esc(it.title)}</button>${it.notes ? `\n      <div class="wk-desc">${esc(it.notes)}</div>` : ''}

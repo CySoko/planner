@@ -58,6 +58,7 @@ function restoreInputs(el, drafts) {
 }
 
 function render() {
+  if (state.ui.dragging) return;
   const now = new Date(), today = M.todayIso(now), nowIso = api.localIso(now);
   $('#today-big').textContent = M.weekdayOf(today) + ' ' + today.slice(5, 7) + '.' + today.slice(8);
   $('#today-sub').textContent = now.toLocaleString('en-US', { month: 'short' }).toLowerCase() + ' ' + now.getFullYear();
@@ -839,6 +840,46 @@ document.addEventListener('focusout', (e) => {
   }
 });
 
+document.addEventListener('dragstart', (e) => {
+  const card = e.target.closest('[data-drag]');
+  if (!card) return;
+  const col = card.closest('.wk-col');
+  state.ui.dragging = { kind: card.dataset.drag, id: card.dataset.id, from: col ? col.dataset.date : '' };
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', card.dataset.id);
+  card.classList.add('dragging');
+});
+document.addEventListener('dragover', (e) => {
+  if (!state.ui.dragging) return;
+  const col = e.target.closest('.wk-col');
+  if (!col) return;
+  e.preventDefault();
+  document.querySelectorAll('.wk-col.drop').forEach(c => { if (c !== col) c.classList.remove('drop'); });
+  col.classList.add('drop');
+});
+document.addEventListener('drop', (e) => {
+  if (!state.ui.dragging) return;
+  const col = e.target.closest('.wk-col');
+  if (!col) return;
+  e.preventDefault();
+  const { kind, id, from } = state.ui.dragging;
+  const date = col.dataset.date;
+  if (date === from) return;
+  const now = nowIso();
+  if (kind === 'item') {
+    const it = state.data.items.find(i => i.id === id);
+    if (it) { const updated = M.reschedule(it, date, now); if (updated) { saveRows('Items', [updated]); notify(`Moved to ${shortDate(date)}`); } }
+  } else if (kind === 'step') {
+    const s = state.data.steps.find(x => x.id === id);
+    if (s) { const updated = M.reschedule(s, date, now); if (updated) { saveRows('Steps', [updated]); notify(`Moved to ${shortDate(date)}`); } }
+  }
+});
+document.addEventListener('dragend', () => {
+  state.ui.dragging = null;
+  document.querySelectorAll('.wk-card.dragging').forEach(c => c.classList.remove('dragging'));
+  document.querySelectorAll('.wk-col.drop').forEach(c => c.classList.remove('drop'));
+  render();
+});
 document.addEventListener('scroll', (e) => { if (e.target.classList && e.target.classList.contains('wk')) updateWkFade(e.target); }, { capture: true, passive: true });
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
   try { if (!localStorage.getItem('sokogen-theme-v2')) { document.documentElement.dataset.theme = e.matches ? 'dark' : 'light'; render(); } } catch (err) { /* ignore */ }

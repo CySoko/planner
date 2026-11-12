@@ -189,6 +189,12 @@ export function buildSyntheticInboxRow(text, guess, now) {
   };
 }
 
+// ---- Drag reschedule ----
+export function reschedule(row, date, now) {
+  if (row.repeat === 'weekly') return null;
+  return { ...row, date, updated: now };
+}
+
 // ---- Inline edit ----
 export function applyItemEdit(item, changes, nowIso) {
   const out = { ...item, updated: nowIso };

@@ -137,6 +137,8 @@ button.wk-title:focus-visible { outline: none; }
 .wk-parent { align-self: flex-start; background: none; border: 0; padding: 0; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--area); cursor: pointer; text-align: left; overflow-wrap: anywhere; }
 .wk-parent:hover { text-decoration: underline; }
 .wk-card.editing { border-color: var(--area); z-index: 5; transform: none; }
+.wk-card.dragging { opacity: .4; }
+.wk-col.drop { outline: 2px dashed var(--line-strong); outline-offset: -2px; border-radius: 8px; }
 .wk-tools { display: inline-flex; gap: 6px; align-items: center; }
 @media (hover: none) { .wk-star:not(.on) { opacity: .75; } }
 .wk-title-input { font-size: 14px; font-weight: 600; width: 100%; }
