@@ -6,8 +6,8 @@ North Star: `docs/north-star.md` · Design Brief: `docs/design-brief.md` · Gap 
 
 ## How Cy works
 - He previews with VS Code Live Server. Never launch a browser, take screenshots or start a server unless he asks. Make the change, say what changed, stop.
-- One change per request. Go straight to the mapped file and read only the section you need. If the target is unclear, ask; don't explore.
-- When a change is done and tests pass, offer to commit, then remind Cy to /clear before the next task.
+- Prompts arrive pre-planned. A prompt may hold several numbered items: do them in order, one commit per item. Read only the files and functions the prompt names. If anything is unclear, or the code doesn't match the prompt, stop and report; don't explore.
+- When an item is done and `npm test` passes, commit and `git push origin main`, then paste the raw push output. Never say something was committed or pushed without showing the output. Then remind Cy to /clear.
 
 ## File map
 | To change | Styles (`css/app.css` section) | Markup / logic |
@@ -31,8 +31,8 @@ North Star: `docs/north-star.md` · Design Brief: `docs/design-brief.md` · Gap 
 ## Always
 - `npm test` before every commit. Logic changes get a test; pure functions go in `js/model.js` or `apps-script/*.js`.
 - Sheet columns: never reorder or delete. Add new ones only at the END of a list in `Schema.js`; Cy then re-runs `setupSheet`.
-- Items are filed via the "+ add task" box (direct) or via Inbox review. Siri captures always go through Inbox.
-- Visual system per the spec: colors only in `tokens.css`; Racing Sans One headings (`font-synthesis: none`), Inter body, JetBrains Mono details; light mode default; all motion stops under `prefers-reduced-motion`.
+- Filing: the + add task box files directly; Inbox review files what Cy accepts. Decided Nov 11 but NOT BUILT (don't build it unless asked): captures whose guesses are all rated sure get filed automatically, unsure ones wait in Inbox, and Claude's suggestions always wait in Inbox. The nightly Claude sort (plan Task 10) is dropped.
+- Visual system per the spec: colors only in `tokens.css`; Racing Sans One headings (`font-synthesis: none`), Inter body, JetBrains Mono details; designed dark-first; the theme follows the device's appearance unless Cy has used the switch; all motion stops under `prefers-reduced-motion`.
 
 ## Apps Script (clasp)
 - `apps-script/` is the only place backend code is edited; never suggest the web editor. `.js` files appear as `.gs` there.
