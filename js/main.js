@@ -61,7 +61,6 @@ function render() {
   if (state.ui.dragging) return;
   const now = new Date(), today = M.todayIso(now), nowIso = api.localIso(now);
   $('#today-big').textContent = M.weekdayOf(today) + ' ' + today.slice(5, 7) + '.' + today.slice(8);
-  $('#today-sub').textContent = now.toLocaleString('en-US', { month: 'short' }).toLowerCase() + ' ' + now.getFullYear();
   const route = (location.hash.replace(/^#\/?/, '') || '').split('?')[0];
   if (!state.ui.scratchDate || state.ui.scratchDate > today) state.ui.scratchDate = today;
 
@@ -1016,5 +1015,32 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 setInterval(() => { if (state.queue.ops.length) flush(); }, 30000);
 setInterval(render, 60000);
 
+function updateClock() {
+  const el = $('#today-sub');
+  if (!el) return;
+  const now = new Date();
+  const month = now.toLocaleString('en-US', { month: 'short' }).toLowerCase();
+  const year = now.getFullYear();
+  const hh = String(now.getHours()).padStart(2, '0');
+  const mm = String(now.getMinutes()).padStart(2, '0');
+  let text = `${month} ${year} · ${hh}:${mm}`;
+  const devTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  if (devTz !== 'America/Denver') {
+    const boulderStr = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/Denver', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+    }).format(now);
+    text += ` · boulder ${boulderStr}`;
+  }
+  el.textContent = text;
+}
+
+function startClock() {
+  updateClock();
+  const now = new Date();
+  const msToNext = (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
+  setTimeout(() => { updateClock(); setInterval(updateClock, 60000); }, msToNext);
+}
+
 render();
+startClock();
 refresh().then(flush);
