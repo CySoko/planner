@@ -151,6 +151,15 @@ button.wk-title:focus-visible { outline: none; }
 .wk-col.drop { outline: 2px dashed var(--line-strong); outline-offset: -2px; border-radius: var(--r-8); }
 .wk-tools { display: inline-flex; gap: 6px; align-items: center; }
 @media (hover: none) { .wk-star:not(.on) { opacity: .75; } }
+/* card motion */
+@keyframes wk-pop { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
+@keyframes wk-strike { to { background-size: 100% 1px; } }
+@keyframes wk-settle { from { opacity: .4; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes wk-leaving { 0% { opacity: 1; max-height: 500px; } 100% { opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; } }
+.chk.pop { animation: wk-pop var(--t-150) var(--ease-out); }
+.wk-card.just-done .wk-title { text-decoration: none; background-image: linear-gradient(var(--dim), var(--dim)); background-repeat: no-repeat; background-position: 0 50%; background-size: 0% 1px; animation: wk-strike var(--t-300) var(--ease-out) forwards; }
+.wk-card.settle { animation: wk-settle var(--t-200) var(--ease-out) both; }
+.wk-card.leaving { animation: wk-leaving var(--t-150) var(--ease-out) forwards; overflow: hidden; pointer-events: none; }
 .wk-title-input { font-size: 14px; font-weight: 600; width: 100%; }
 .wk-edit-more { display: flex; flex-direction: column; gap: 9px; }
 .wk-edit-more[hidden] { display: none; }

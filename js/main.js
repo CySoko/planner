@@ -540,16 +540,37 @@ function sendCapture() {
   flushSoon();
 }
 
+function animateOnce(el, cls) {
+  el.classList.add(cls);
+  el.addEventListener('animationend', () => el.classList.remove(cls), { once: true });
+}
 function toggleItem(id) {
   const it = state.data.items.find(i => i.id === id);
   if (!it) return;
   const wasDone = it.status === 'done';
   saveRows('Items', [{ ...it, status: wasDone ? 'open' : 'done', updated: nowIso() }]);
+  if (!wasDone) {
+    const chk = document.querySelector(`[data-act="toggle-item"][data-id="${CSS.escape(id)}"]`);
+    if (chk) {
+      animateOnce(chk, 'pop');
+      const card = chk.closest('.wk-card');
+      if (card) animateOnce(card, 'just-done');
+    }
+  }
 }
 function toggleStep(id) {
   const s = state.data.steps.find(x => x.id === id);
   if (!s) return;
-  saveRows('Steps', [{ ...s, done: s.done !== true, updated: nowIso() }]);
+  const wasDone = s.done === true;
+  saveRows('Steps', [{ ...s, done: !wasDone, updated: nowIso() }]);
+  if (!wasDone) {
+    const chk = document.querySelector(`[data-act="toggle-step"][data-id="${CSS.escape(id)}"]`);
+    if (chk) {
+      animateOnce(chk, 'pop');
+      const card = chk.closest('.wk-card');
+      if (card) animateOnce(card, 'just-done');
+    }
+  }
 }
 function addStep(itemId) {
   const input = document.querySelector(`[data-step-input="${CSS.escape(itemId)}"]`);
@@ -753,12 +774,21 @@ document.addEventListener('click', (e) => {
     const it = state.data.items.find(i => i.id === id);
     if (it) {
       const prevStatus = it.status;
-      saveRows('Items', [{ ...it, status: 'archived', updated: nowIso() }]);
-      toastUndo = () => {
-        const fresh = state.data.items.find(i => i.id === id);
-        if (fresh) saveRows('Items', [{ ...fresh, status: prevStatus, updated: nowIso() }]);
+      const card = el.closest('.wk-card');
+      const doSave = () => {
+        saveRows('Items', [{ ...it, status: 'archived', updated: nowIso() }]);
+        toastUndo = () => {
+          const fresh = state.data.items.find(i => i.id === id);
+          if (fresh) saveRows('Items', [{ ...fresh, status: prevStatus, updated: nowIso() }]);
+        };
+        showToast('<span>Deleted</span><button class="toast-btn" data-act="undo-toast">undo</button><button class="toast-btn" data-act="dismiss-toast" aria-label="Dismiss">\u2715</button>');
       };
-      showToast('<span>Deleted</span><button class="toast-btn" data-act="undo-toast">undo</button><button class="toast-btn" data-act="dismiss-toast" aria-label="Dismiss">\u2715</button>');
+      if (card && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        animateOnce(card, 'leaving');
+        setTimeout(doSave, 150);
+      } else {
+        doSave();
+      }
     }
   }
   if (act === 'toggle-item') toggleItem(id);
@@ -990,12 +1020,17 @@ document.addEventListener('drop', (e) => {
   const date = col.dataset.date;
   if (date === from) return;
   const now = nowIso();
+  let didSave = false;
   if (kind === 'item') {
     const it = state.data.items.find(i => i.id === id);
-    if (it) { const updated = M.reschedule(it, date, now); if (updated) { saveRows('Items', [updated]); notify(`Moved to ${shortDate(date)}`); } }
+    if (it) { const updated = M.reschedule(it, date, now); if (updated) { saveRows('Items', [updated]); notify(`Moved to ${shortDate(date)}`); didSave = true; } }
   } else if (kind === 'step') {
     const s = state.data.steps.find(x => x.id === id);
-    if (s) { const updated = M.reschedule(s, date, now); if (updated) { saveRows('Steps', [updated]); notify(`Moved to ${shortDate(date)}`); } }
+    if (s) { const updated = M.reschedule(s, date, now); if (updated) { saveRows('Steps', [updated]); notify(`Moved to ${shortDate(date)}`); didSave = true; } }
+  }
+  if (didSave) {
+    const movedCard = document.querySelector(`[data-drag="${kind}"][data-id="${CSS.escape(id)}"]`);
+    if (movedCard) animateOnce(movedCard, 'settle');
   }
 });
 document.addEventListener('dragend', () => {
