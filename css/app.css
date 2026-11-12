@@ -1,6 +1,7 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--bg); color: var(--text); }
 body { font-family: var(--font-body); font-size: 15px; line-height: 1.45; -webkit-font-smoothing: antialiased; transition: background-color var(--t-500), color var(--t-500); }
+body::before { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: var(--grain); background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A//www.w3.org/2000/svg'%20width%3D'160'%20height%3D'160'%3E%3Cfilter%20id%3D'n'%3E%3CfeTurbulence%20type%3D'fractalNoise'%20baseFrequency%3D'.9'%20numOctaves%3D'2'%20stitchTiles%3D'stitch'/%3E%3C/filter%3E%3Crect%20width%3D'160'%20height%3D'160'%20filter%3D'url(%23n)'/%3E%3C/svg%3E"); background-size: 160px 160px; }
 a { color: inherit; }
 button, input, select, textarea { font: inherit; color: inherit; }
 .mono { font-family: var(--font-mono); }
@@ -10,7 +11,7 @@ h1, h2 { margin: 0; line-height: 1.05; }
 .h2, h2 { font-size: 30px; }
 [hidden] { display: none !important; }
 
-.app { max-width: 1320px; margin: 0 auto; padding: 24px 28px 0; min-height: 100vh; display: flex; flex-direction: column; gap: 22px; padding-top: max(24px, env(safe-area-inset-top)); }
+.app { max-width: 1320px; margin: 0 auto; padding: 24px 28px 0; min-height: 100vh; display: flex; flex-direction: column; gap: 22px; padding-top: max(24px, env(safe-area-inset-top)); position: relative; z-index: 1; }
 main { flex: 1; outline: none; }
 
 /* header */

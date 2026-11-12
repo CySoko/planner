@@ -54,6 +54,7 @@
   --t-500: .5s;
   --t-600: .6s;
   --ease-out: cubic-bezier(.2,.8,.2,1);
+  --grain: .025;
 }
 :root[data-theme="dark"] {
   --bg: #080810;
@@ -83,4 +84,5 @@
   --glow: rgba(255, 59, 79, .45);
   --shadow: 0 30px 80px -40px rgba(255, 59, 79, .35);
   color-scheme: dark;
+  --grain: .035;
 }
