@@ -1,5 +1,5 @@
 import { countdown, daysBetween, isStalled, nextAction, todayIso } from '../model.js';
-import { esc, AREA_LABEL, groupsFor, timeLabel, check, editItemForm, shortDate } from './ui.js';
+import { esc, AREAS, AREA_LABEL, groupsFor, timeLabel, check, editItemForm, shortDate } from './ui.js';
 
 const isOpen = i => i.status !== 'done' && i.status !== 'archived';
 const byDate = (a, b) => (a.date || '9999').localeCompare(b.date || '9999') || (a.time || '').localeCompare(b.time || '');
@@ -34,9 +34,15 @@ export function renderArea(area, state, today, nowIso) {
   }
   if (!open.length) body += `<p class="empty">Nothing open in ${AREA_LABEL[area]}. Use + add task to start one.</p>`;
 
+  const areaNav = AREAS.map(a =>
+    a === area
+      ? `<h1 class="page-title" aria-current="page">${AREA_LABEL[a]}</h1>`
+      : `<a class="page-alt area-${a}" href="#/${a}">${AREA_LABEL[a]}</a>`
+  ).join('');
+
   return `<div class="area-${area}">
     <div class="page-head">
-      <div><h1 class="page-title">${AREA_LABEL[area]}</h1>
+      <div><nav class="area-nav" aria-label="Areas">${areaNav}</nav>
         <div class="muted"><b style="color:var(--text)">${open.length} big item${open.length === 1 ? '' : 's'}</b> · ${stepsLeft} step${stepsLeft === 1 ? '' : 's'} left</div></div>
     </div>
     ${body}

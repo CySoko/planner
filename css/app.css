@@ -183,6 +183,9 @@ button.wk-title:focus-visible { outline: none; }
 .page-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; margin-bottom: 26px; }
 .back { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--muted); text-decoration: none; }
 .page-title { font-family: 'Racing Sans One', sans-serif; font-synthesis: none; font-size: 60px; line-height: 1; color: var(--area); margin: 8px 0; }
+.area-nav { display: flex; align-items: baseline; gap: 20px; }
+.page-alt { font-family: 'Racing Sans One', sans-serif; font-synthesis: none; font-size: 26px; color: var(--muted); text-decoration: none; }
+.page-alt:hover, .page-alt:focus-visible { color: var(--area); }
 .group { display: flex; flex-direction: column; gap: 12px; margin-bottom: 34px; }
 .group-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 .group-head h2 { font-size: 28px; }
@@ -269,6 +272,7 @@ button.wk-title:focus-visible { outline: none; }
   .wordmark { font-size: 26px; }
   .quote { font-size: 17px; padding-left: 0; }
   .page-title { font-size: 46px; }
+  .page-alt { font-size: 20px; }
   .card-inner { padding-left: 20px; }
   .wk { grid-auto-columns: calc((100% - 8px) / 2.2); }
   .wk-col.is-today { grid-column: span 1; }
