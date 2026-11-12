@@ -687,6 +687,8 @@ function wpSync(wp) {
 
 // ---------- events ----------
 document.addEventListener('click', (e) => {
+  const pill = e.target.closest('[data-wp-area]');
+  if (pill) { wpPickArea(pill); return; }
   const el = e.target.closest('[data-act]');
   if (!el) return;
   const act = el.dataset.act, id = el.dataset.id;
@@ -747,7 +749,6 @@ document.addEventListener('click', (e) => {
   }
   if (act === 'undo-toast') undoToast();
   if (act === 'dismiss-toast') hideToast();
-  if (el.dataset.wpArea) { wpPickArea(el); return; }
   if (act === 'toggle-edit-more') { const more = el.closest('form').querySelector('.wk-edit-more'); more.hidden = !more.hidden; el.textContent = more.hidden ? 'more \u25b8' : '\u25c2 less'; }
   if (act === 'edit-item') { state.ui.editing = state.ui.editing === id ? null : id; if (state.ui.editing) state.ui.open[id] = true; render(); if (state.ui.editing) { const ti = document.querySelector('.wk-title-input'); if (ti) { ti.focus(); ti.setSelectionRange(ti.value.length, ti.value.length); } } }
   if (act === 'clear-done-week') {
