@@ -631,6 +631,41 @@ test('resolveCapture: result never has pendingArea property', () => {
   assert.equal(r.pendingArea, undefined);
 });
 
+// ---- newGroupRows ----
+import { newGroupRows } from '../js/model.js';
+
+const ngContext = [
+  { kind: 'project', key: 'plx', value: 'Parallax', active: true },
+  { kind: 'class', key: 'neuro', value: 'Neurohacking', active: true },
+  { kind: 'keyword', key: 'parallax', value: 'projects/plx', active: true },
+];
+
+test('newGroupRows: normal name returns group row and keyword row', () => {
+  const rows = newGroupRows(ngContext, 'projects', 'Goldfinch');
+  assert.equal(rows.length, 2);
+  assert.deepEqual(rows[0], { kind: 'project', key: 'goldfinch', value: 'Goldfinch', active: true });
+  assert.deepEqual(rows[1], { kind: 'keyword', key: 'goldfinch', value: 'projects/goldfinch', active: true });
+});
+
+test('newGroupRows: key collision with a different kind gets -2 suffix', () => {
+  const rows = newGroupRows(ngContext, 'projects', 'Neuro');
+  assert.equal(rows[0].kind, 'project');
+  assert.equal(rows[0].key, 'neuro-2');
+  assert.equal(rows[1].value, 'projects/neuro-2');
+});
+
+test('newGroupRows: skips keyword row if keyword with that key already exists', () => {
+  const rows = newGroupRows(ngContext, 'life', 'Parallax');
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].kind, 'life');
+  assert.equal(rows[0].key, 'parallax');
+});
+
+test('newGroupRows: blank name returns empty array', () => {
+  assert.deepEqual(newGroupRows(ngContext, 'projects', ''), []);
+  assert.deepEqual(newGroupRows(ngContext, 'projects', '   '), []);
+});
+
 test('resolveCapture: no preset and no guess gives empty where', () => {
   const guess = { title: 'Random', area: '', group: '', date: '', time: '', type: '', confidence: {} };
   const r = resolveCapture(guess, {}, '', groups);

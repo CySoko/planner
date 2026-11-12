@@ -71,6 +71,8 @@ textarea { font-size: 17px; resize: vertical; }
 .wp-pill.area-life.on { background: var(--life); color: var(--btn-text); border-color: var(--life); }
 .wp-pill.area-projects.on { background: var(--projects); color: var(--btn-text); border-color: var(--projects); }
 .wp-group { font-size: 14px; min-height: 32px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--panel-solid); padding: 0 8px; }
+.wp-new { display: flex; align-items: center; gap: 6px; }
+.wp-new-input { font-size: 14px; min-height: 32px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--panel-solid); padding: 0 8px; width: 160px; color: var(--text); }
 .error { color: var(--school); margin: 0; font-size: 13px; }
 
 /* always remember */

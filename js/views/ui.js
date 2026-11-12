@@ -38,11 +38,14 @@ export function wherePicker(fieldName, context, selectedWhere) {
   const pills = AREAS.map(a =>
     `<button type="button" class="wp-pill area-${a}${a === selArea ? ' on' : ''}" data-wp-area="${a}" aria-pressed="${a === selArea}">${AREA_LABEL[a]}</button>`
   ).join('');
+  const newLabel = selArea === 'projects' ? '+ new project' : '+ new group';
   const opts = `<option value="">none</option>` +
-    areaGroups.map(g => `<option value="${esc(g.key)}" ${g.key === selGroup ? 'selected' : ''}>${esc(g.name)}</option>`).join('');
+    areaGroups.map(g => `<option value="${esc(g.key)}" ${g.key === selGroup ? 'selected' : ''}>${esc(g.name)}</option>`).join('') +
+    `<option value="__new">${newLabel}</option>`;
   return `<div class="wp" data-wp data-wp-field="${esc(fieldName)}">
     <div class="wp-pills">${pills}</div>
     ${selArea ? `<select class="wp-group" data-wp-group>${opts}</select>` : ''}
+    <div class="wp-new" hidden><input class="wp-new-input" type="text" placeholder="${selArea === 'projects' ? 'project name' : 'group name'}"><button type="button" class="btn small" data-act="wp-new-add">add</button></div>
     <input type="hidden" name="${esc(fieldName)}" value="${esc(selectedWhere || '')}">
   </div>`;
 }

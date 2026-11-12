@@ -648,7 +648,10 @@ function wpPickArea(pill) {
     sel.dataset.wpGroup = '';
     wp.querySelector('.wp-pills').after(sel);
   }
-  sel.innerHTML = `<option value="">none</option>` + groups.map(g => `<option value="${esc(g.key)}">${esc(g.name)}</option>`).join('');
+  const newLbl = area === 'projects' ? '+ new project' : '+ new group';
+  sel.innerHTML = `<option value="">none</option>` + groups.map(g => `<option value="${esc(g.key)}">${esc(g.name)}</option>`).join('') + `<option value="__new">${newLbl}</option>`;
+  const newInput = wp.querySelector('.wp-new-input');
+  if (newInput) newInput.placeholder = area === 'projects' ? 'project name' : 'group name';
   // Update hidden input
   const hidden = wp.querySelector(`input[name="${CSS.escape(fieldName)}"]`);
   if (hidden) hidden.value = area + '/';
@@ -662,10 +665,45 @@ function wpPickArea(pill) {
 function wpGroupChange(sel) {
   const wp = sel.closest('[data-wp]');
   if (!wp) return;
+  if (sel.value === '__new') {
+    const newDiv = wp.querySelector('.wp-new');
+    const newInp = wp.querySelector('.wp-new-input');
+    if (newDiv) newDiv.hidden = false;
+    if (newInp) newInp.focus();
+    return;
+  }
   const fieldName = wp.dataset.wpField;
   const hidden = wp.querySelector(`input[name="${CSS.escape(fieldName)}"]`);
   const activeArea = wp.querySelector('.wp-pill.on');
   if (hidden && activeArea) hidden.value = activeArea.dataset.wpArea + '/' + sel.value;
+  wpSync(wp);
+}
+
+function wpNewAdd(wp) {
+  const newInp = wp.querySelector('.wp-new-input');
+  const name = newInp ? newInp.value.trim() : '';
+  if (!name) return;
+  const activeArea = wp.querySelector('.wp-pill.on');
+  const area = activeArea ? activeArea.dataset.wpArea : '';
+  if (!area) return;
+  const rows = M.newGroupRows(state.data.context, area, name);
+  if (!rows.length) return;
+  saveRows('Context', rows);
+  const newKey = rows[0].key;
+  const sel = wp.querySelector('.wp-group');
+  if (sel) {
+    const lbl = area === 'projects' ? '+ new project' : '+ new group';
+    sel.innerHTML = `<option value="">none</option>` +
+      groupsFor(state.data.context, area).map(g => `<option value="${esc(g.key)}">${esc(g.name)}</option>`).join('') +
+      `<option value="__new">${lbl}</option>`;
+    sel.value = newKey;
+  }
+  const fieldName = wp.dataset.wpField;
+  const hidden = wp.querySelector(`input[name="${CSS.escape(fieldName)}"]`);
+  if (hidden) hidden.value = area + '/' + newKey;
+  const newDiv = wp.querySelector('.wp-new');
+  if (newDiv) newDiv.hidden = true;
+  if (newInp) newInp.value = '';
   wpSync(wp);
 }
 
@@ -747,6 +785,7 @@ document.addEventListener('click', (e) => {
     const field = el.closest('form').querySelector(`[name="${el.dataset.field}"]`);
     if (field) { field.value = el.dataset.value; const lbl = field.closest('label') || field.closest('.unsure'); if (lbl) lbl.classList.remove('unsure'); }
   }
+  if (act === 'wp-new-add') { const wp = el.closest('[data-wp]'); if (wp) wpNewAdd(wp); }
   if (act === 'offer-no') { state.ui.offer = null; render(); }
   if (act === 'offer-yes') {
     const o = state.ui.offer; state.ui.offer = null;
@@ -842,6 +881,25 @@ document.addEventListener('keydown', (e) => {
   if (e.target.dataset && e.target.dataset.scratchInput !== undefined) {
     if (e.key === 'Enter') { e.preventDefault(); scratchEnter(e.target); }
     if (e.key === 'Backspace' && !e.target.value) { e.preventDefault(); scratchDeleteBullet(e.target); }
+  }
+  if (e.target.classList && e.target.classList.contains('wp-new-input')) {
+    if (e.key === 'Enter') { e.preventDefault(); const wp = e.target.closest('[data-wp]'); if (wp) wpNewAdd(wp); }
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      const wp = e.target.closest('[data-wp]');
+      if (wp) {
+        const sel = wp.querySelector('.wp-group');
+        if (sel) sel.value = '';
+        const newDiv = wp.querySelector('.wp-new');
+        if (newDiv) newDiv.hidden = true;
+        e.target.value = '';
+        const activeArea = wp.querySelector('.wp-pill.on');
+        const fieldName = wp.dataset.wpField;
+        const hidden = wp.querySelector(`input[name="${CSS.escape(fieldName)}"]`);
+        if (hidden && activeArea) hidden.value = activeArea.dataset.wpArea + '/';
+        wpSync(wp);
+      }
+    }
   }
 });
 document.addEventListener('input', (e) => {

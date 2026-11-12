@@ -302,3 +302,30 @@ export function resolveCapture(guess, overrides, presetArea, groups, presetDate 
 
   return { where, title, date, time, type };
 }
+
+// ---- New group creation ----
+const KIND_OF_AREA = { school: 'class', life: 'life', projects: 'project' };
+const GROUP_KINDS = new Set(['class', 'life', 'project']);
+
+export function newGroupRows(context, area, name) {
+  const trimmed = (name || '').trim();
+  if (!trimmed) return [];
+  const slug = trimmed.toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (!slug) return [];
+  const existingGroupKeys = new Set(
+    (context || []).filter(r => GROUP_KINDS.has(r.kind)).map(r => String(r.key))
+  );
+  let key = slug;
+  let n = 2;
+  while (existingGroupKeys.has(key)) key = slug + '-' + (n++);
+  const kind = KIND_OF_AREA[area] || area;
+  const rows = [{ kind, key, value: trimmed, active: true }];
+  const keywordKey = trimmed.toLowerCase();
+  const existingKeywords = new Set(
+    (context || []).filter(r => r.kind === 'keyword').map(r => String(r.key))
+  );
+  if (!existingKeywords.has(keywordKey)) {
+    rows.push({ kind: 'keyword', key: keywordKey, value: area + '/' + key, active: true });
+  }
+  return rows;
+}
