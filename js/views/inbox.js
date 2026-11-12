@@ -1,4 +1,4 @@
-import { esc, AREAS, AREA_LABEL, allGroups, groupName, shortDate } from './ui.js';
+import { esc, AREAS, AREA_LABEL, allGroups, groupName, shortDate, wherePicker } from './ui.js';
 import { isOpen } from '../model.js';
 
 const parse = s => { try { return JSON.parse(s || '{}') || {}; } catch (e) { return {}; } };
@@ -38,15 +38,12 @@ function card(r, context, openItems) {
   }
 
   const conf = parse(r.confidence), alt = parse(r.alternatives);
-  const where = r.guessArea && r.guessGroup ? r.guessArea + '/' + r.guessGroup : '';
-  const groups = allGroups(context);
+  const where = r.guessArea ? r.guessArea + '/' + (r.guessGroup || '') : '';
   const cls = k => (conf[k] === 'unsure' ? 'unsure' : '');
   return `<form class="panel inbox-card" data-form="accept" data-id="${esc(r.id)}">${head}
     <div class="form" style="padding:0;margin:0">
       <label class="wide">Title<input type="text" name="title" value="${esc(r.guessTitle || r.text)}" required></label>
-      <label class="${cls('where')}">Where<select name="where"><option value="">choose…</option>
-        ${AREAS.map(a => `<optgroup label="${AREA_LABEL[a]}">${groups.filter(g => g.area === a).map(g => `<option value="${a}/${esc(g.key)}" ${a + '/' + g.key === where ? 'selected' : ''}>${esc(g.name)}</option>`).join('')}</optgroup>`).join('')}
-        </select>${alt.where ? `<button type="button" class="alt" data-act="use-alt" data-field="where" data-value="${esc(alt.where)}">or ${esc(groupName(context, alt.where.split('/')[1]))}?</button>` : ''}</label>
+      <div class="${cls('where')}">Where${wherePicker('where', context, where)}${alt.where ? `<button type="button" class="alt" data-act="use-alt" data-field="where" data-value="${esc(alt.where)}">or ${esc(groupName(context, alt.where.split('/')[1]))}?</button>` : ''}</div>
       <label class="${cls('when')}">Date<input type="date" name="date" value="${esc(r.guessDate)}">${alt.when ? `<button type="button" class="alt" data-act="use-alt" data-field="date" data-value="${esc(alt.when)}">or ${shortDate(alt.when)}?</button>` : ''}</label>
       <label>Time<input type="time" name="time" value="${esc(r.guessTime)}"></label>
       <label class="${cls('type')}">Type<select name="type">${['deadline', 'event', 'do-date'].map(t => `<option ${t === (r.guessType || 'deadline') ? 'selected' : ''}>${t}</option>`).join('')}</select></label>

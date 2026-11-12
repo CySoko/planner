@@ -738,7 +738,7 @@ document.addEventListener('click', (e) => {
   if (act === 'accept-suggestion') acceptSuggestion(id);
   if (act === 'use-alt') {
     const field = el.closest('form').querySelector(`[name="${el.dataset.field}"]`);
-    if (field) { field.value = el.dataset.value; field.closest('label').classList.remove('unsure'); }
+    if (field) { field.value = el.dataset.value; const lbl = field.closest('label') || field.closest('.unsure'); if (lbl) lbl.classList.remove('unsure'); }
   }
   if (act === 'offer-no') { state.ui.offer = null; render(); }
   if (act === 'offer-yes') {

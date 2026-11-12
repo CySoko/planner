@@ -48,7 +48,6 @@ export function wherePicker(fieldName, context, selectedWhere) {
 }
 
 export function editItemForm(it, context) {
-  const groups = allGroups(context);
   return `<form class="wk-pop" data-form="edit-item" data-id="${esc(it.id)}">
         <input class="wk-title-input" type="text" name="title" value="${esc(it.title)}" required>
         <textarea class="wk-desc-input" name="notes" rows="2" placeholder="description (optional)">${esc(it.notes || '')}</textarea>
@@ -57,7 +56,7 @@ export function editItemForm(it, context) {
           ${it.repeat === 'weekly' ? '<p class="wk-note">Repeats weekly. Changes apply to every week.</p>' : ''}
           <label class="wk-f">Time<input type="time" name="time" value="${esc(it.time || '')}"></label>
           <label class="wk-f">Type<select name="type">${['deadline', 'event', 'do-date'].map(t => `<option ${t === it.type ? 'selected' : ''}>${t}</option>`).join('')}</select></label>
-          <label class="wk-f">Where<select name="where">${groups.map(g => `<option value="${esc(g.area + '/' + g.key)}" ${g.area === it.area && g.key === it.group ? 'selected' : ''}>${esc(AREA_LABEL[g.area])} \u00b7 ${esc(g.name)}</option>`).join('')}</select></label>
+          <div class="wk-f">Where${wherePicker('where', context, it.area + '/' + (it.group || ''))}</div>
         </div>
         <div class="wk-edit-foot"><button type="button" class="btn small" data-act="toggle-edit-more">more \u25b8</button><div class="row-end"><button type="button" class="btn small" data-act="edit-item" data-id="${esc(it.id)}">esc</button><button type="submit" class="btn small primary">save \u21b5</button></div></div>
       </form>`;
