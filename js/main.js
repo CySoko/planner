@@ -347,6 +347,7 @@ function openPalette(presetArea, presetDate) {
     $('#capture').value = '';
   }
   if (presetArea) {
+    if (presetArea !== capPreset) delete capOverrides.where;
     capPreset = presetArea;
     capExpanded = false;
   }
@@ -652,6 +653,10 @@ function wpPickArea(pill) {
   const hidden = wp.querySelector(`input[name="${CSS.escape(fieldName)}"]`);
   if (hidden) hidden.value = area + '/';
   wpSync(wp);
+  if (fieldName === 'cap-where') {
+    const cap = $('#capture');
+    if (cap) { cap.focus(); cap.setSelectionRange(cap.value.length, cap.value.length); }
+  }
 }
 
 function wpGroupChange(sel) {
@@ -828,6 +833,10 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && !$('#palette').hidden) closePalette();
   if (e.target.id === 'capture' && e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); capGuess ? fileCapture() : sendCapture(); }
   if (e.target.closest && e.target.closest('.cap-grid') && e.key === 'Enter') { e.preventDefault(); fileCapture(); return; }
+  if (e.key === 'Enter' && !e.shiftKey && e.target.closest && e.target.closest('#palette')) {
+    const act = e.target.dataset && e.target.dataset.act;
+    if (act !== 'close-palette' && act !== 'send-capture' && act !== 'toggle-cap-expand') { e.preventDefault(); fileCapture(); return; }
+  }
   if (e.target.closest && e.target.closest('[data-form="edit-item"]') && e.key === 'Enter') { if (e.shiftKey && e.target.tagName === 'TEXTAREA') return; e.preventDefault(); saveItemEdit(e.target.closest('[data-form="edit-item"]')); return; }
   if (e.target.dataset && e.target.dataset.stepInput && e.key === 'Enter') { e.preventDefault(); addStep(e.target.dataset.stepInput); }
   if (e.target.dataset && e.target.dataset.scratchInput !== undefined) {
