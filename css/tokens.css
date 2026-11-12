@@ -31,6 +31,29 @@
   --font-display: 'Racing Sans One', 'IBM Plex Sans', sans-serif;
   --font-body: 'IBM Plex Sans', ui-sans-serif, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  /* radius */
+  --r-2: 2px;
+  --r-4: 4px;
+  --r-5: 5px;
+  --r-6: 6px;
+  --r-8: 8px;
+  --r-10: 10px;
+  --r-12: 12px;
+  --r-14: 14px;
+  --r-16: 16px;
+  --r-18: 18px;
+  --r-20: 20px;
+  --r-pill: 999px;
+  /* motion */
+  --t-150: .15s;
+  --t-200: .2s;
+  --t-250: .25s;
+  --t-300: .3s;
+  --t-400: .4s;
+  --t-450: .45s;
+  --t-500: .5s;
+  --t-600: .6s;
+  --ease-out: cubic-bezier(.2,.8,.2,1);
 }
 :root[data-theme="dark"] {
   --bg: #080810;
