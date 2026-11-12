@@ -20,7 +20,7 @@ main { flex: 1; outline: none; }
 .wordmark { font-size: 32px; letter-spacing: .3em; line-height: 1; }.top-right { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px 14px; }
 .today { text-align: right; margin-right: 6px; }
 .today-big { font-family: var(--font-display); font-synthesis: none; font-size: 30px; line-height: 1; color: var(--date); letter-spacing: .04em; }
-.today-sub { font-size: 11px; color: var(--muted); letter-spacing: .1em; margin-top: 4px; }
+.today-sub { font-size: 11px; color: var(--muted); letter-spacing: .1em; margin-top: 4px; font-variant-numeric: tabular-nums; }
 
 /* buttons */
 .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 16px; border-radius: var(--r-10); border: 1px solid var(--line-strong); background: transparent; cursor: pointer; font-size: 14px; font-weight: 500; transition: transform var(--t-200), box-shadow var(--t-300), filter var(--t-300); text-decoration: none; }
@@ -109,8 +109,9 @@ textarea { font-size: 17px; resize: vertical; }
 .wk-head .wd { font-family: var(--font-mono); font-size: 10px; font-weight: 700; letter-spacing: .16em; color: var(--date); }
 .wk-head .num { font-family: var(--font-display); font-synthesis: none; font-size: 22px; line-height: 1; }
 .wk-col.is-today { grid-column: span 2; }
-.wk-col.is-today .wk-head { background: var(--date); border-color: var(--date); }
-.wk-col.is-today .wk-head .wd, .wk-col.is-today .wk-head .num { color: var(--on-date); }
+.wk-col.is-today .wk-head { background: transparent; border-top: none; border-left: none; border-right: none; border-bottom: 2px solid var(--btn); border-radius: 0; padding: 9px 10px 7px; }
+.wk-col.is-today .wk-head .wd { color: var(--btn); }
+.wk-col.is-today .wk-head .num { font-size: 34px; color: var(--text); }
 .wk-col:not(.is-today) .wk-meta { display: none; }
 .wk-items { display: flex; flex-direction: column; gap: 8px; }
 .wk-card { position: relative; display: flex; flex-direction: column; gap: 6px; padding: 10px; border-radius: var(--r-12); background: var(--hover); border: 1px solid var(--line); transition: border-color var(--t-300), transform var(--t-300) var(--ease-out), box-shadow var(--t-300); cursor: pointer; }
